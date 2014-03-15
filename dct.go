@@ -23,6 +23,7 @@ type ImageBag struct {
     CPhash uint64
     Phash0 uint64
     Phash1 uint64
+    digest Digest
 }
 
 func hammingDistance( hash1, hash2 uint64) uint64 {
@@ -107,20 +108,28 @@ func DctImageHashOne(img image.Gray) uint64 {
             }
         }
     }
+
     return hash
+}
+
+func dctMatrixRow(N, M, x int, c0, c1 float64) []float64 {
+    row := make([]float64, M)
+    row[0] = c0
+    for y := 1; y < M; y++ {
+        row[y] = c1 * math.Cos( ( math.Pi / 2.0 / float64(N) ) * float64(y) * ( 2.0 * float64(x) + 1.0 ) );
+    }
+
+    return row
 }
 
 func dctMatrix(N, M int) (*matrix.Dense, error) {
     mtx := make([][]float64, N)
     c1 := math.Sqrt(2.0/float64(N));
     c0 := 1/math.Sqrt(float64(M))
-    for x := 0; x < N; x++{
-        mtx[x] = make([]float64, M)
-        mtx[x][0] = c0
-        for y := 1; y < M; y++ {
-            mtx[x][y] = c1 * math.Cos( ( math.Pi / 2.0 / float64(N) ) * float64(y) * ( 2.0 * float64(x) + 1.0 ) );
-        }
+    for x := 0; x < N; x++ {
+        mtx[x] = dctMatrixRow(N, M, x, c0, c1)
     }
+
     return matrix.NewDense(mtx);
 }
 
@@ -135,7 +144,6 @@ func DctImageHashTwo(img image.Gray) uint64 {
     }
     dctMtxTransp := dctMtx.T(nil); // Transpose
 
-    // CImg<float> dctImage = (*C)*img*Ctransp;
     dctImage := dctMtx.Dot( imgMtx, nil ).Dot(dctMtxTransp, nil)
 
     dctImage, err = cropMatrix(dctImage, 0, 0, 7, 7)
@@ -155,3 +163,17 @@ func DctImageHashTwo(img image.Gray) uint64 {
     return hash
 }
 
+func DctImageHashRadon(img image.Gray) Digest {
+    imgMtx, err := getImageMatrix(img)
+    if err != nil {
+        panic(err)
+    }
+    radonProjection, err := radonProjections(imgMtx, img.Bounds().Max.X)
+    if err != nil {
+        panic(err)
+    }
+
+    fv := featureVector(radonProjection)
+    dctDigest := dct(fv)
+    return dctDigest
+}

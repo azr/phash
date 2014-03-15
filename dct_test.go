@@ -6,17 +6,15 @@ import (
     // "time"
 )
 
-// var images_dir = "./tests/cats/"
-
 func loadImages() []ImageBag {
-    images_in_dir, err := ioutil.ReadDir(images_dir)
+    images_in_dir, err := ioutil.ReadDir(cats_dir)
     if err != nil {
         panic(err)
     }
 
     images := make([]ImageBag, len(images_in_dir) )
     for i, fi := range images_in_dir {
-        images[i].InitialiseFromFileInfo(fi)
+        images[i].InitialiseFromFileInfo(cats_dir, fi)
     }
     return images
 }

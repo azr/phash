@@ -15,22 +15,29 @@ import (
 _ "image/gif"
 _ "image/png"
 _ "image/jpeg"
+_ "code.google.com/p/go.image/tiff"
+_ "code.google.com/p/go.image/bmp"
 
 "github.com/nfnt/resize"
-"code.google.com/p/biogo.matrix"
 )
 
-var images_dir = "./tests/cats/"
+var cats_dir = "./tests/cats/"
+var lena_dir = "./tests/lena/"
 
 func (image *ImageBag) CompareWithImages(images []ImageBag) {
     for _, comparedImage := range images {
         dist, err := phash.HammingDistanceForHashes(image.CPhash, comparedImage.CPhash)
         if err != nil {
-            panic(err)
+            dist = -1
         }
 
         if (image.Path != comparedImage.Path) {
-            fmt.Println( "Distance from ", image.Path, " to ", comparedImage.Path, " is : ", dist, " d(Phash0) : ", hammingDistance(image.Phash0, comparedImage.Phash0), "d(Phash1) : ", hammingDistance(image.Phash1, comparedImage.Phash1))
+            fmt.Println(
+            "d(Phash1) : ", hammingDistance(image.Phash1, comparedImage.Phash1),
+            "d(Phash0) : ", hammingDistance(image.Phash0, comparedImage.Phash0),
+            " Radon : ", crosscorr(image.digest, comparedImage.digest, 0.85) ,
+            "c(Phash) : ", dist,
+            " ", image.Path, " <> " , comparedImage.Path )
         }
 
     }
@@ -51,23 +58,11 @@ func gscl(src image.Image) image.Gray {
     return *gray
 }
 
-func getImageMatrix(src image.Gray) (*matrix.Dense, error) {
-    bounds := src.Bounds()
-    mtx := make([][]float64, bounds.Max.X)
-    for x := 0; x < bounds.Max.X; x++ {
-        mtx[x] = make([]float64, bounds.Max.Y)
-        for y := 0; y < bounds.Max.Y; y++ {
-            _, _, b, _ := src.At(x, y).RGBA()
-            mtx[x][y] = float64(b)
-        }
-    }
-    return matrix.NewDense(mtx)
-}
-
 func (img *ImageBag) ComputeImageHashOne() {
 
     stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
     greyscaleStamp := gscl(stamp)
+
     // greyscaleStamp := greyscale.Greyscale(stamp)
     img.Phash0 = DctImageHashOne(greyscaleStamp)
 }
@@ -83,13 +78,19 @@ func (img *ImageBag) ComputeImageHashTwo() {
 func (img *ImageBag) ComputeImageHashPhash() {
     hash, err := phash.ImageHashDCT(img.Path)
     if err != nil {
-        panic(err)
+        fmt.Println("Error in ComputeImageHashPhash : ", err)
     }
     img.CPhash = hash
 }
 
-func (img *ImageBag) InitialiseFromFileInfo(fi os.FileInfo) {
-    img.Path = images_dir + fi.Name()
+func (img *ImageBag) ComputeImageHashRadon() {
+    stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
+    greyscaleStamp := gscl(stamp)
+    img.digest = DctImageHashRadon(greyscaleStamp)
+}
+
+func (img *ImageBag) InitialiseFromFileInfo(dir_path string, fi os.FileInfo) {
+    img.Path = dir_path + fi.Name()
     imgFile, err := os.Open(img.Path) // For read access.
     if err != nil {
         panic(err)
@@ -105,8 +106,7 @@ func (img *ImageBag) InitialiseFromFileInfo(fi os.FileInfo) {
     return
 }
 
-func main() {
-
+func parseDir(images_dir string) {
     images_in_dir, err := ioutil.ReadDir(images_dir)
     if err != nil {
         panic(err)
@@ -114,16 +114,21 @@ func main() {
 
     images := make([]ImageBag, len(images_in_dir) )
     for i, fi := range images_in_dir {
-        images[i].InitialiseFromFileInfo(fi)
+        images[i].InitialiseFromFileInfo(images_dir, fi)
         images[i].ComputeImageHashOne()
         images[i].ComputeImageHashTwo()
         images[i].ComputeImageHashPhash()
+        images[i].ComputeImageHashRadon()
     }
 
     fmt.Println( "Loaded images" )
     for _, img := range images {
         img.CompareWithImages(images)
     }
+}
 
+func main() {
+    parseDir(lena_dir)
+    parseDir(cats_dir)
 }
 
