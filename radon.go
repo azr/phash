@@ -4,6 +4,7 @@ package main
 import (
 "code.google.com/p/biogo.matrix"
 "math"
+"image"
 )
 
 const (
@@ -203,4 +204,19 @@ func crosscorr(x, y Digest, threshold float64) bool {
     }
 
     return max > threshold
+}
+
+func DctImageHashRadon(img image.Gray) Digest {
+    imgMtx, err := getImageMatrix(img)
+    if err != nil {
+        panic(err)
+    }
+    radonProjection, err := radonProjections(imgMtx, img.Bounds().Max.X)
+    if err != nil {
+        panic(err)
+    }
+
+    fv := featureVector(radonProjection)
+    dctDigest := dct(fv)
+    return dctDigest
 }

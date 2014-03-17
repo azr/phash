@@ -17,13 +17,15 @@ _ "image/jpeg"
 )
 
 type ImageBag struct {
-    decodedImage image.Image
+    Dir string
     Path string
+    decodedImage image.Image
     Format string
     CPhash uint64
     Phash0 uint64
     Phash1 uint64
     digest Digest
+    parsed bool
 }
 
 func hammingDistance( hash1, hash2 uint64) uint64 {
@@ -161,19 +163,4 @@ func DctImageHashTwo(img image.Gray) uint64 {
         one = one << 1
     }
     return hash
-}
-
-func DctImageHashRadon(img image.Gray) Digest {
-    imgMtx, err := getImageMatrix(img)
-    if err != nil {
-        panic(err)
-    }
-    radonProjection, err := radonProjections(imgMtx, img.Bounds().Max.X)
-    if err != nil {
-        panic(err)
-    }
-
-    fv := featureVector(radonProjection)
-    dctDigest := dct(fv)
-    return dctDigest
 }

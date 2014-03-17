@@ -26,18 +26,30 @@ var lena_dir = "./tests/lena/"
 
 func (image *ImageBag) CompareWithImages(images []ImageBag) {
     for _, comparedImage := range images {
+        if (comparedImage.parsed == true) {
+            continue
+        }
+
         dist, err := phash.HammingDistanceForHashes(image.CPhash, comparedImage.CPhash)
         if err != nil {
             dist = -1
         }
+        dPhash1 := hammingDistance(image.Phash1, comparedImage.Phash1)
+        dPhash0 := hammingDistance(image.Phash0, comparedImage.Phash0)
+        cc := crosscorr(image.digest, comparedImage.digest, 0.85)
 
-        if (image.Path != comparedImage.Path) {
-            fmt.Println(
-            "d(Phash1) : ", hammingDistance(image.Phash1, comparedImage.Phash1),
-            "d(Phash0) : ", hammingDistance(image.Phash0, comparedImage.Phash0),
-            " Radon : ", crosscorr(image.digest, comparedImage.digest, 0.85) ,
+        fmt.Println(
+            "d(Phash1) : ", dPhash1 ,
+            "d(Phash0) : ", dPhash0,
+            " Radon : ", cc,
             "c(Phash) : ", dist,
             " ", image.Path, " <> " , comparedImage.Path )
+
+        if (comparedImage.Path == image.Path) {
+            if (cc != true || dPhash0 != 0 || dPhash1 != 0) {
+                fmt.Println(" LOL !")
+                //panic(" I'm an asshole with " + image.Path)
+            }
         }
 
     }
@@ -84,17 +96,17 @@ func (img *ImageBag) ComputeImageHashPhash() {
 }
 
 func (img *ImageBag) ComputeImageHashRadon() {
-    stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-    greyscaleStamp := gscl(stamp)
+    // stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
+    greyscaleStamp := gscl(img.decodedImage)
     img.digest = DctImageHashRadon(greyscaleStamp)
 }
 
-func (img *ImageBag) InitialiseFromFileInfo(dir_path string, fi os.FileInfo) {
-    img.Path = dir_path + fi.Name()
+func (img *ImageBag) InitialiseFromFileInfo() {
     imgFile, err := os.Open(img.Path) // For read access.
     if err != nil {
         panic(err)
     }
+    fmt.Println( "Open ", img.Path )
     decodedImage, format, err := image.Decode(imgFile)
     if err != nil {
         panic(err)
@@ -106,29 +118,34 @@ func (img *ImageBag) InitialiseFromFileInfo(dir_path string, fi os.FileInfo) {
     return
 }
 
-func parseDir(images_dir string) {
-    images_in_dir, err := ioutil.ReadDir(images_dir)
-    if err != nil {
-        panic(err)
+func parseDirs(dirs ...string) []ImageBag {
+    var images []ImageBag
+    for _, dir := range dirs {
+        files_in_dir, err := ioutil.ReadDir(dir)
+        if err != nil {
+            panic(err)
+        }
+        for _, fi := range files_in_dir {
+            image := ImageBag{dir, dir + fi.Name(), nil, "", 0, 0, 0, Digest{}, false}
+            image.InitialiseFromFileInfo()
+            image.ComputeImageHashOne()
+            image.ComputeImageHashTwo()
+            image.ComputeImageHashPhash()
+            image.ComputeImageHashRadon()
+            images = append(images, image)
+        }
     }
 
-    images := make([]ImageBag, len(images_in_dir) )
-    for i, fi := range images_in_dir {
-        images[i].InitialiseFromFileInfo(images_dir, fi)
-        images[i].ComputeImageHashOne()
-        images[i].ComputeImageHashTwo()
-        images[i].ComputeImageHashPhash()
-        images[i].ComputeImageHashRadon()
-    }
-
-    fmt.Println( "Loaded images" )
-    for _, img := range images {
-        img.CompareWithImages(images)
-    }
+    return images
 }
 
 func main() {
-    parseDir(lena_dir)
-    parseDir(cats_dir)
+    images := parseDirs(lena_dir, cats_dir)
+
+    fmt.Println( "Loaded and populated images" )
+    for i, img := range images {
+        img.CompareWithImages(images)
+        images[i].parsed = true
+    }
 }
 
