@@ -21,11 +21,11 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"image/draw"
 
 	"github.com/nfnt/resize"
-	// "code.google.com/p/graphics-go/graphics"
+	"code.google.com/p/graphics-go/graphics"
 )
-
 
 var cats_dir = "./testdata/cats/"
 var lena_dir = "./testdata/lena/"
@@ -37,6 +37,7 @@ type ImageBag struct {
 	Path         string
 	decodedImage image.Image
 	Format       string
+	Angle        float64
 	CPhash       uint64
 	Phash0       uint64
 	Phash1       uint64
@@ -44,16 +45,16 @@ type ImageBag struct {
 	parsed       bool
 }
 
-// func main() {
-//     images := parseDirs(lena_dir, cats_dir)
+var angles = []float64 { 90, 180, 360 }
 
-//     fmt.Println("Loaded and populated images")
-//     for i, img := range images {
-//         img.CompareWithImages(images)
-//         images[i].parsed = true
-//     }
-// }
+func copyImage(src image.Image) (draw.Image) {
+	b := src.Bounds()
+	copy := image.NewRGBA(b)
 
+	draw.Draw(copy, copy.Bounds(), src, b.Min, draw.Src)
+
+	return copy
+}
 
 func parseDirs(dirs ...string) (images []ImageBag) {
 	for _, dir := range dirs {
@@ -62,9 +63,19 @@ func parseDirs(dirs ...string) (images []ImageBag) {
 			panic(err)
 		}
 		for _, fi := range files_in_dir {
-			image := ImageBag{dir, dir + fi.Name(), nil, "", 0, 0, 0, Digest{}, false}
+			image := ImageBag{dir, dir + fi.Name(), nil, "", 0, 0, 0, 0, Digest{}, false}
 			image.InitialiseFromFileInfo()
 			images = append(images, image)
+			for angle := range angles {
+
+				newImg := copyImage(image.decodedImage)
+
+				if err := graphics.Rotate(newImg, image.decodedImage, &graphics.RotateOptions{float64(angle)}) ; err != nil {
+					panic( err )
+				}
+				rImg := ImageBag{dir, dir + fi.Name(), newImg, image.Format, float64(angle), 0, 0, 0, Digest{}, false}
+				images = append(images, rImg)
+			}
 		}
 	}
 
@@ -85,7 +96,7 @@ func loadImages() []ImageBag {
 
 // }
 
-func BenchmarkDctImageHash_one(b *testing.B) {
+func BenchmarkDct(b *testing.B) {
 
 	images := loadImages()
 	b.ResetTimer()
@@ -98,7 +109,7 @@ func BenchmarkDctImageHash_one(b *testing.B) {
 
 }
 
-func BenchmarkDctImageHash_two(b *testing.B) {
+func BenchmarkDctMatrix(b *testing.B) {
 
 	images := loadImages()
 	b.ResetTimer()
@@ -111,7 +122,7 @@ func BenchmarkDctImageHash_two(b *testing.B) {
 
 }
 
-func BenchmarkDctImageHash_phash(b *testing.B) {
+func BenchmarkDctCPhash(b *testing.B) {
 
 	images := loadImages()
 	b.ResetTimer()
@@ -124,7 +135,7 @@ func BenchmarkDctImageHash_phash(b *testing.B) {
 
 }
 
-func BenchmarkDctImageHash_radon(b *testing.B) {
+func BenchmarkRadon(b *testing.B) {
 
 	images := loadImages()
 	b.ResetTimer()
@@ -178,7 +189,6 @@ func (img *ImageBag) InitialiseFromFileInfo() {
 	if err != nil {
 		panic(err)
 	}
-	imgFile.Close()
 	img.decodedImage = decodedImage
 	img.Format = format
 
