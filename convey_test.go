@@ -228,7 +228,7 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
         cat_small := getImgBag(cats_dir, "cat_small.jpg", 0)
         cat_sky := getImgBag(cats_dir, "cat_sky.jpg", 0)
         cat_smile := getImgBag(cats_dir, "smiling.jpg", 0)
-        cats := []*ImageBag{cat_big, cat_medium, cat_small, cat_sky}
+        cats := []*ImageBag{cat_big, cat_medium, cat_small, cat_sky, cat_smile}
 
         lena_toshop := getImgBag(lena_dir, "lena_std.tiff", 0)
         lena_nkd := getImgBag(lena_dir, "l_hires.jpg", 0)
