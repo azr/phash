@@ -1,4 +1,4 @@
-package phash
+package phash_test
 
 import (
 	"io/ioutil"
@@ -6,9 +6,10 @@ import (
 	// "time"
 
 	"fmt"
+	"github.com/azer-/phash"
+	cphash "github.com/kavu/go-phash"
 	"image"
 	"os"
-	cphash "github.com/kavu/go-phash"
 	// "code.google.com/p/biogo.matrix"
 	// "github.com/hawx/img/greyscale"
 	// "image/color"
@@ -21,10 +22,8 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"image/draw"
 
 	"github.com/nfnt/resize"
-	"code.google.com/p/graphics-go/graphics"
 )
 
 var cats_dir = "./testdata/cats/"
@@ -32,61 +31,92 @@ var lena_dir = "./testdata/lena/"
 
 var gimages []ImageBag = nil
 
+type Angle float64
+
 type ImageBag struct {
 	Dir          string
-	Path         string
+	Filename     string
 	decodedImage image.Image
 	Format       string
-	Angle        float64
+	Angle        Angle
 	CPhash       uint64
-	Phash0       uint64
-	Phash1       uint64
-	digest       Digest
+	Phash        uint64
+	PhashMatrix  uint64
+	Digest       phash.Digest
 	parsed       bool
+	Rotations    map[Angle]*ImageBag
 }
 
-var angles = []float64 { 90, 180, 360 }
+var angles = []Angle{90, 180, 360}
 
-func copyImage(src image.Image) (draw.Image) {
-	b := src.Bounds()
-	copy := image.NewRGBA(b)
+var Treshold = uint64(17)
 
-	draw.Draw(copy, copy.Bounds(), src, b.Min, draw.Src)
+func parseDirs(ch chan<- ImageBag, dirs ...string) (images []ImageBag) {
 
-	return copy
-}
-
-func parseDirs(dirs ...string) (images []ImageBag) {
 	for _, dir := range dirs {
-		files_in_dir, err := ioutil.ReadDir(dir)
-		if err != nil {
-			panic(err)
-		}
-		for _, fi := range files_in_dir {
-			image := ImageBag{dir, dir + fi.Name(), nil, "", 0, 0, 0, 0, Digest{}, false}
-			image.InitialiseFromFileInfo()
-			images = append(images, image)
-			for angle := range angles {
-
-				newImg := copyImage(image.decodedImage)
-
-				if err := graphics.Rotate(newImg, image.decodedImage, &graphics.RotateOptions{float64(angle)}) ; err != nil {
-					panic( err )
-				}
-				rImg := ImageBag{dir, dir + fi.Name(), newImg, image.Format, float64(angle), 0, 0, 0, Digest{}, false}
-				images = append(images, rImg)
+		done := make(chan bool)
+		go func() {
+			files, err := ioutil.ReadDir(dir)
+			if err != nil {
+				panic(err)
 			}
-		}
+
+			for _, fi := range files {
+				image := getImgBag(dir, fi.Name(), 0)
+				if ch == nil {
+					images = append(images, *image)
+				} else {
+					ch <- *image
+				}
+
+				for _, angle := range angles {
+					rImg := getImgBag(dir, fi.Name(), angle)
+					if ch == nil {
+						images = append(images, *rImg)
+					} else {
+						ch <- *rImg
+					}
+				}
+			}
+			done <- true
+		}()
+		<-done
 	}
+	close(ch)
 
 	return
 }
 
 func loadImages() []ImageBag {
 	if gimages == nil {
-		gimages = parseDirs(lena_dir, cats_dir)
+		gimages = parseDirs(nil, lena_dir, cats_dir)
 	}
 	return gimages
+}
+
+func loadImagesAsync() <-chan ImageBag {
+	if gimages != nil {
+		ch := make(chan ImageBag, len(gimages))
+		for _, img := range gimages {
+			ch <- img
+		}
+		close(ch)
+		return ch
+	} else {
+		ch := make(chan ImageBag)
+		resChan := make(chan ImageBag)
+		go parseDirs(ch, lena_dir, cats_dir)
+		go func() {
+			var images []ImageBag
+			for img := range ch {
+				resChan <- img
+				images = append(images, img)
+			}
+			close(resChan)
+			gimages = images
+		}()
+		return resChan
+	}
 }
 
 // func TestTimeConsuming(t *testing.T) {
@@ -103,7 +133,7 @@ func BenchmarkDct(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeDct()
+			img.ComputeDct(true)
 		}
 	}
 
@@ -116,7 +146,7 @@ func BenchmarkDctMatrix(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeDctMatrix()
+			img.ComputeDctMatrix(true)
 		}
 	}
 
@@ -129,7 +159,7 @@ func BenchmarkDctCPhash(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeImageHashPhash()
+			img.ComputeImageHashPhash(true)
 		}
 	}
 
@@ -142,45 +172,59 @@ func BenchmarkRadon(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeImageHashRadon()
+			img.ComputeImageHashRadon(true)
 		}
 	}
 
 }
 
-func (img *ImageBag) ComputeDct() {
+func (img *ImageBag) ComputeDct(force bool) {
+	if force == false && img.Phash != 0 {
+		return
+	}
 
 	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := gscl(stamp)
+	greyscaleStamp := phash.Gscl(stamp)
 
 	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.Phash0 = Dct(greyscaleStamp)
+	img.Phash = phash.Dct(greyscaleStamp)
 }
 
-func (img *ImageBag) ComputeDctMatrix() {
+func (img *ImageBag) ComputeDctMatrix(force bool) {
+	if force == false && img.PhashMatrix != 0 {
+		return
+	}
 
 	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := gscl(stamp)
+	greyscaleStamp := phash.Gscl(stamp)
 	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.Phash1 = DctMatrix(greyscaleStamp)
+	img.PhashMatrix = phash.DctMatrix(greyscaleStamp)
 }
 
-func (img *ImageBag) ComputeImageHashPhash() {
-	hash, err := cphash.ImageHashDCT(img.Path)
+func (img *ImageBag) ComputeImageHashPhash(force bool) {
+	if force == false && img.CPhash != 0 {
+		return
+	}
+
+	hash, err := cphash.ImageHashDCT(img.Dir + img.Filename)
 	if err != nil {
 		fmt.Println("Error in ComputeImageHashPhash : ", err)
 	}
 	img.CPhash = hash
 }
 
-func (img *ImageBag) ComputeImageHashRadon() {
+func (img *ImageBag) ComputeImageHashRadon(force bool) {
+	if force == false && img.Digest.Size != 0 {
+		return
+	}
+
 	// stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := gscl(img.decodedImage)
-	img.digest = Radon(greyscaleStamp)
+	greyscaleStamp := phash.Gscl(img.decodedImage)
+	img.Digest = phash.Radon(greyscaleStamp)
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
-	imgFile, err := os.Open(img.Path) // For read access.
+	imgFile, err := os.Open(img.Dir + img.Filename) // For read access.
 	defer imgFile.Close()
 	if err != nil {
 		panic(err)
@@ -205,24 +249,22 @@ func (image *ImageBag) CompareWithImages(images []ImageBag) {
 		if err != nil {
 			dist = -1
 		}
-		dPhash1 := hammingDistance(image.Phash1, comparedImage.Phash1)
-		dPhash0 := hammingDistance(image.Phash0, comparedImage.Phash0)
-		cc := crosscorr(image.digest, comparedImage.digest, 0.85)
+		dPhash1 := phash.HammingDistance(image.PhashMatrix, comparedImage.PhashMatrix)
+		dPhash0 := phash.HammingDistance(image.Phash, comparedImage.Phash)
+		cc := phash.CrossCorr(image.Digest, comparedImage.Digest, 0.85)
 
 		fmt.Println(
 			"d(Phash1) : ", dPhash1,
 			"d(Phash0) : ", dPhash0,
 			" Radon : ", cc,
 			"c(Phash) : ", dist,
-			" ", image.Path, " <> ", comparedImage.Path)
+			" ", image.Filename, " <> ", comparedImage.Filename)
 
-		if comparedImage.Path == image.Path {
+		if comparedImage.Filename == image.Filename {
 			if cc != true || dPhash0 != 0 || dPhash1 != 0 {
-				fmt.Println(" LOL !")
-				//panic(" I'm an asshole with " + image.Path)
+				fmt.Println(" FAIL !")
 			}
 		}
-
 	}
 
 	return

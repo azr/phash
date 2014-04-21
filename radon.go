@@ -22,8 +22,8 @@ type Features struct {
 }
 
 type Digest struct {
-	coeffs []uint8 //the head of the digest integer coefficient array
-	size   int     //the size of the coeff array
+	Coeffs []uint8 //the head of the digest integer coefficient array
+	Size   int     //the size of the coeff array
 }
 
 func radonProjections(img matrix.Matrix, N int) (Projections, error) {
@@ -126,18 +126,18 @@ func featureVector(projs Projections) Features {
 }
 
 func dct(fv Features) Digest {
-	var digest Digest
+	var Digest Digest
 
 	N := fv.size
 	nb_coeffs := nb_coeffs_radon
 
-	digest.coeffs = make([]uint8, nb_coeffs)
+	Digest.Coeffs = make([]uint8, nb_coeffs)
 
-	digest.size = nb_coeffs
+	Digest.Size = nb_coeffs
 
 	R := fv.features
 
-	D := digest.coeffs
+	D := Digest.Coeffs
 
 	var D_temp [nb_coeffs_radon]float64
 	max := 0.0
@@ -167,15 +167,15 @@ func dct(fv Features) Digest {
 		D[i] = uint8(math.MaxUint8 * (D_temp[i] - min) / (max - min))
 	}
 
-	return digest
+	return Digest
 }
 
-func crosscorr(x, y Digest, threshold float64) bool {
+func CrossCorr(x, y Digest, threshold float64) bool {
 
-	N := y.size
+	N := y.Size
 
-	x_coeffs := x.coeffs
-	y_coeffs := y.coeffs
+	x_coeffs := x.Coeffs
+	y_coeffs := y.Coeffs
 
 	r := make([]float64, N)
 	sumx := 0.0
