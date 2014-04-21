@@ -1,7 +1,7 @@
-package phash_test
+package phash
 
 import (
-    "github.com/azer-/phash"
+    // "github.com/azer-/phash"
     . "github.com/smartystreets/goconvey/convey"
     "testing"
     "code.google.com/p/graphics-go/graphics"
@@ -22,11 +22,11 @@ func getImgBag(dir, filename string, angle Angle) *ImageBag {
 
     if angle != 0 {
         if rotatedImage, found := img.Rotations[angle] ; !found {
-            draw := phash.CopyImage(img.decodedImage)
+            draw := CopyImage(img.decodedImage)
             if err := graphics.Rotate(draw, img.decodedImage, &graphics.RotateOptions{float64(angle)}); err != nil {
                 panic(err)
             }
-            rImg := ImageBag{dir, filename, draw, img.Format, angle, 0, 0, 0, phash.Digest{}, false, nil}
+            rImg := ImageBag{dir, filename, draw, img.Format, angle, 0, 0, 0, Digest{}, false, nil}
             img.Rotations[angle] = &rImg
 
             return img.Rotations[angle]
@@ -65,11 +65,11 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("And Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(cat_big.Phash, cat_medium.Phash)
+                distance := HammingDistance(cat_big.Phash, cat_medium.Phash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_big.Phash, cat_small.Phash)
+                distance = HammingDistance(cat_big.Phash, cat_small.Phash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_medium.Phash, cat_small.Phash)
+                distance = HammingDistance(cat_medium.Phash, cat_small.Phash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -87,11 +87,11 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("Then Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(cat_big.PhashMatrix, cat_medium.PhashMatrix)
+                distance := HammingDistance(cat_big.PhashMatrix, cat_medium.PhashMatrix)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_big.PhashMatrix, cat_small.PhashMatrix)
+                distance = HammingDistance(cat_big.PhashMatrix, cat_small.PhashMatrix)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_medium.PhashMatrix, cat_small.PhashMatrix)
+                distance = HammingDistance(cat_medium.PhashMatrix, cat_small.PhashMatrix)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -109,11 +109,11 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("Then Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(cat_big.CPhash, cat_medium.CPhash)
+                distance := HammingDistance(cat_big.CPhash, cat_medium.CPhash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_big.CPhash, cat_small.CPhash)
+                distance = HammingDistance(cat_big.CPhash, cat_small.CPhash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(cat_medium.CPhash, cat_small.CPhash)
+                distance = HammingDistance(cat_medium.CPhash, cat_small.CPhash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -131,7 +131,7 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             SkipConvey("Then the Cross Correlation for threshold should be true", func() {
-                So( phash.CrossCorr(cat_big.Digest, cat_medium.Digest, 0.01), ShouldBeTrue  )
+                So( CrossCorr(cat_big.Digest, cat_medium.Digest, 0.01), ShouldBeTrue  )
             })
 
         })
@@ -154,7 +154,7 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("And Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(sun_big.Phash, sun_small.Phash)
+                distance := HammingDistance(sun_big.Phash, sun_small.Phash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -170,9 +170,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("Then Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(sun_big.PhashMatrix, sun_small.PhashMatrix)
+                distance := HammingDistance(sun_big.PhashMatrix, sun_small.PhashMatrix)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(sun_big.PhashMatrix, sun_small.PhashMatrix)
+                distance = HammingDistance(sun_big.PhashMatrix, sun_small.PhashMatrix)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -188,9 +188,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             })
 
             Convey("Then Hamming Distance should be under threshold ", func() {
-                distance := phash.HammingDistance(sun_big.CPhash, sun_small.CPhash)
+                distance := HammingDistance(sun_big.CPhash, sun_small.CPhash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-                distance = phash.HammingDistance(sun_big.CPhash, sun_small.CPhash)
+                distance = HammingDistance(sun_big.CPhash, sun_small.CPhash)
                 So(distance, ShouldBeLessThanOrEqualTo, Treshold)
             })
 
@@ -209,8 +209,8 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 
             SkipConvey("Then the Cross Correlation for threshold should be true", func() {
 
-                So( phash.CrossCorr(sun_big.Digest, sun_small.Digest, -0.1), ShouldBeTrue  )
-                So( phash.CrossCorr(sun_big.Digest, sun_small.Digest, 0.0), ShouldBeTrue  )
+                So( CrossCorr(sun_big.Digest, sun_small.Digest, -0.1), ShouldBeTrue  )
+                So( CrossCorr(sun_big.Digest, sun_small.Digest, 0.0), ShouldBeTrue  )
             })
 
         })
@@ -257,21 +257,21 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
             Convey("Then cats do not look like girls", func() {
                 PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-                    distance := phash.HammingDistance(cat.Phash, girl.Phash)
+                    distance := HammingDistance(cat.Phash, girl.Phash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And suns do not look like cats", func() {
                 PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-                    distance := phash.HammingDistance(sun.Phash, cat.Phash)
+                    distance := HammingDistance(sun.Phash, cat.Phash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And girls do not look like suns", func() {
                 PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-                    distance := phash.HammingDistance(sun.Phash, girl.Phash)
+                    distance := HammingDistance(sun.Phash, girl.Phash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
@@ -295,21 +295,21 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
             Convey("Then cats do not look like girls", func() {
                 PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-                    distance := phash.HammingDistance(cat.PhashMatrix, girl.PhashMatrix)
+                    distance := HammingDistance(cat.PhashMatrix, girl.PhashMatrix)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And suns do not look like cats", func() {
                 PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-                    distance := phash.HammingDistance(sun.PhashMatrix, cat.PhashMatrix)
+                    distance := HammingDistance(sun.PhashMatrix, cat.PhashMatrix)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And girls do not look like suns", func() {
                 PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-                    distance := phash.HammingDistance(sun.PhashMatrix, girl.PhashMatrix)
+                    distance := HammingDistance(sun.PhashMatrix, girl.PhashMatrix)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
@@ -334,21 +334,21 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
             Convey("Then cats do not look like girls", func() {
                 PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-                    distance := phash.HammingDistance(cat.CPhash, girl.CPhash)
+                    distance := HammingDistance(cat.CPhash, girl.CPhash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And suns do not look like cats", func() {
                 PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-                    distance := phash.HammingDistance(sun.CPhash, cat.CPhash)
+                    distance := HammingDistance(sun.CPhash, cat.CPhash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
 
             Convey("And girls do not look like suns", func() {
                 PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-                    distance := phash.HammingDistance(sun.CPhash, girl.CPhash)
+                    distance := HammingDistance(sun.CPhash, girl.CPhash)
                     So(distance, ShouldBeGreaterThan, Treshold)
                 })
             })
@@ -372,19 +372,19 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
             Convey("Then cats do not look like girls", func() {
                 PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-                    So( phash.CrossCorr(cat.Digest, girl.Digest, 0.8), ShouldBeFalse  )
+                    So( CrossCorr(cat.Digest, girl.Digest, 0.8), ShouldBeFalse  )
                 })
             })
 
             Convey("And suns do not look like cats", func() {
                 PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-                    So( phash.CrossCorr(sun.Digest, cat.Digest, 0.8), ShouldBeFalse  )
+                    So( CrossCorr(sun.Digest, cat.Digest, 0.8), ShouldBeFalse  )
                 })
             })
 
             Convey("And girls do not look like suns", func() {
                 PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-                    So( phash.CrossCorr(girl.Digest, sun.Digest, 0.8), ShouldBeFalse  )
+                    So( CrossCorr(girl.Digest, sun.Digest, 0.8), ShouldBeFalse  )
                 })
             })
 

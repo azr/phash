@@ -1,4 +1,4 @@
-package phash_test
+package phash
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	// "time"
 
 	"fmt"
-	"github.com/azer-/phash"
+	// "github.com/azer-/phash"
 	cphash "github.com/kavu/go-phash"
 	"image"
 	"os"
@@ -42,7 +42,7 @@ type ImageBag struct {
 	CPhash       uint64
 	Phash        uint64
 	PhashMatrix  uint64
-	Digest       phash.Digest
+	Digest       Digest
 	parsed       bool
 	Rotations    map[Angle]*ImageBag
 }
@@ -184,10 +184,10 @@ func (img *ImageBag) ComputeDct(force bool) {
 	}
 
 	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := phash.Gscl(stamp)
+	greyscaleStamp := Gscl(stamp)
 
 	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.Phash = phash.Dct(greyscaleStamp)
+	img.Phash = Dct(greyscaleStamp)
 }
 
 func (img *ImageBag) ComputeDctMatrix(force bool) {
@@ -196,9 +196,9 @@ func (img *ImageBag) ComputeDctMatrix(force bool) {
 	}
 
 	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := phash.Gscl(stamp)
+	greyscaleStamp := Gscl(stamp)
 	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.PhashMatrix = phash.DctMatrix(greyscaleStamp)
+	img.PhashMatrix = DctMatrix(greyscaleStamp)
 }
 
 func (img *ImageBag) ComputeImageHashPhash(force bool) {
@@ -219,8 +219,8 @@ func (img *ImageBag) ComputeImageHashRadon(force bool) {
 	}
 
 	// stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := phash.Gscl(img.decodedImage)
-	img.Digest = phash.Radon(greyscaleStamp)
+	greyscaleStamp := Gscl(img.decodedImage)
+	img.Digest = Radon(greyscaleStamp)
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
@@ -245,26 +245,26 @@ func (image *ImageBag) CompareWithImages(images []ImageBag) {
 			continue
 		}
 
-		dist, err := cphash.HammingDistanceForHashes(image.CPhash, comparedImage.CPhash)
-		if err != nil {
-			dist = -1
-		}
-		dPhash1 := phash.HammingDistance(image.PhashMatrix, comparedImage.PhashMatrix)
-		dPhash0 := phash.HammingDistance(image.Phash, comparedImage.Phash)
-		cc := phash.CrossCorr(image.Digest, comparedImage.Digest, 0.85)
+		// dist, err := cphash.HammingDistanceForHashes(image.CPhash, comparedImage.CPhash)
+		// if err != nil {
+		// 	dist = -1
+		// }
+		// dPhash1 := HammingDistance(image.PhashMatrix, comparedImage.PhashMatrix)
+		// dPhash0 := HammingDistance(image.Phash, comparedImage.Phash)
+		// cc := CrossCorr(image.Digest, comparedImage.Digest, 0.85)
 
-		fmt.Println(
-			"d(Phash1) : ", dPhash1,
-			"d(Phash0) : ", dPhash0,
-			" Radon : ", cc,
-			"c(Phash) : ", dist,
-			" ", image.Filename, " <> ", comparedImage.Filename)
+		// fmt.Println(
+		// 	"d(Phash1) : ", dPhash1,
+		// 	"d(Phash0) : ", dPhash0,
+		// 	" Radon : ", cc,
+		// 	"c(Phash) : ", dist,
+		// 	" ", image.Filename, " <> ", comparedImage.Filename)
 
-		if comparedImage.Filename == image.Filename {
-			if cc != true || dPhash0 != 0 || dPhash1 != 0 {
-				fmt.Println(" FAIL !")
-			}
-		}
+		// if comparedImage.Filename == image.Filename {
+		// 	if cc != true || dPhash0 != 0 || dPhash1 != 0 {
+		// 		fmt.Println(" FAIL !")
+		// 	}
+		// }
 	}
 
 	return
