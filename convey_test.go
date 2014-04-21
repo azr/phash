@@ -119,7 +119,7 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 
         })
 
-        Convey("When Radon Hashes are computed", func() {
+        SkipConvey("When Radon Hashes are computed", func() {
             cat_big.ComputeImageHashRadon(false)
             cat_medium.ComputeImageHashRadon(false)
 
@@ -130,7 +130,7 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
                 So( cat_medium.Digest.Coeffs , ShouldNotBeNil )
             })
 
-            SkipConvey("Then the Cross Correlation for threshold should be true", func() {
+            Convey("Then the Cross Correlation for threshold should be true", func() {
                 So( CrossCorr(cat_big.Digest, cat_medium.Digest, 0.01), ShouldBeTrue  )
             })
 
