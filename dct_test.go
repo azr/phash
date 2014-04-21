@@ -82,7 +82,9 @@ func parseDirs(ch chan<- ImageBag, dirs ...string) (images []ImageBag) {
 		}()
 		<-done
 	}
-	close(ch)
+	if ch != nil {
+		close(ch)
+	}
 
 	return
 }
