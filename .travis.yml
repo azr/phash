@@ -1,0 +1,12 @@
+language: go
+go:
+ - 1.2
+ - release
+ - tip
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install libphash0 libphash-dev
+
+script:
+ - go test -v ./...
