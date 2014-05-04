@@ -19,6 +19,7 @@ import (
 	// image.Decode to understand [jpeg|gif|png] formatted images.
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
+    _ "code.google.com/p/graphics-go/graphics"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"

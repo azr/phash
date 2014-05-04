@@ -10,9 +10,14 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-
 	"code.google.com/p/biogo.matrix"
 	"math"
+	_ "code.google.com/p/go.image/bmp"
+	_ "code.google.com/p/go.image/tiff"
+	_ "code.google.com/p/graphics-go/graphics"
+	_ "github.com/kavu/go-phash"
+	_ "github.com/nfnt/resize"
+	_ "github.com/smartystreets/goconvey/convey"
 	"sort"
 )
 
