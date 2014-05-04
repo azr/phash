@@ -6,7 +6,7 @@ go:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install libphash0 libphash-dev imagemagick libblas-dev
+  - sudo apt-get install libphash0 libphash-dev imagemagick libatlas-base-dev
 
 script:
  - go test -v ./...
