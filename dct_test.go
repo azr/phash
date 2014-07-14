@@ -23,8 +23,6 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-
-	"github.com/nfnt/resize"
 )
 
 var cats_dir = "./testdata/cats/"
@@ -35,17 +33,13 @@ var gimages []ImageBag = nil
 type Angle float64
 
 type ImageBag struct {
-	Dir          string
-	Filename     string
-	decodedImage image.Image
-	Format       string
-	Angle        Angle
-	CPhash       uint64
-	Phash        uint64
-	PhashMatrix  uint64
-	Digest       Digest
-	parsed       bool
-	Rotations    map[Angle]*ImageBag
+	Digest
+	CPhash		uint64
+	Angle		Angle
+	Rotations	map[Angle]*ImageBag
+	Dir			string
+	Filename	string
+	parsed		bool
 }
 
 var angles = []Angle{90, 180, 360}
@@ -136,7 +130,7 @@ func BenchmarkDct(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeDct(true)
+			img.ComputeGreyscaleDct(true)
 		}
 	}
 
@@ -149,7 +143,7 @@ func BenchmarkDctMatrix(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, img := range images {
-			img.ComputeDctMatrix(true)
+			img.ComputeGreyscaleDctMatrix(true)
 		}
 	}
 
@@ -181,27 +175,20 @@ func BenchmarkRadon(b *testing.B) {
 
 }
 
-func (img *ImageBag) ComputeDct(force bool) {
-	if force == false && img.Phash != 0 {
+func (img *ImageBag) ComputeGreyscaleDct(force bool) {
+	if force == false && img.Digest.Phash != 0 {
 		return
 	}
 
-	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := Gscl(stamp)
-
-	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.Phash = Dct(greyscaleStamp)
+	img.Digest.ComputeGreyscaleDct()
 }
 
-func (img *ImageBag) ComputeDctMatrix(force bool) {
+func (img *ImageBag) ComputeGreyscaleDctMatrix(force bool) {
 	if force == false && img.PhashMatrix != 0 {
 		return
 	}
 
-	stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := Gscl(stamp)
-	// greyscaleStamp := greyscale.Greyscale(stamp)
-	img.PhashMatrix = DctMatrix(greyscaleStamp)
+	img.Digest.ComputeGreyscaleDctMatrix()
 }
 
 func (img *ImageBag) ComputeImageHashPhash(force bool) {
@@ -217,13 +204,13 @@ func (img *ImageBag) ComputeImageHashPhash(force bool) {
 }
 
 func (img *ImageBag) ComputeImageHashRadon(force bool) {
-	if force == false && img.Digest.Size != 0 {
+	if force == false && img.Digest.RadonDigest.Size != 0 {
 		return
 	}
 
-	// stamp := resize.Resize(32, 32, img.decodedImage, resize.Bilinear)
-	greyscaleStamp := Gscl(img.decodedImage)
-	img.Digest = Radon(greyscaleStamp)
+	// stamp := resize.Resize(32, 32, img.Image, resize.Bilinear)
+	greyscaleStamp := Gscl(img.Image)
+	img.Digest.RadonDigest = Radon(greyscaleStamp)
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
@@ -232,11 +219,11 @@ func (img *ImageBag) InitialiseFromFileInfo() {
 	if err != nil {
 		panic(err)
 	}
-	decodedImage, format, err := image.Decode(imgFile)
+	Image, format, err := image.Decode(imgFile)
 	if err != nil {
 		panic(err)
 	}
-	img.decodedImage = decodedImage
+	img.Image = Image
 	img.Format = format
 
 	return

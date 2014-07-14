@@ -21,8 +21,8 @@ type Features struct {
 	size     int       //the size of the feature array
 }
 
-type Digest struct {
-	Coeffs []uint8 //the head of the digest integer coefficient array
+type RadonDigest struct {
+	Coeffs []uint8 //the head of the Radondigest integer coefficient array
 	Size   int     //the size of the coeff array
 }
 
@@ -125,19 +125,19 @@ func featureVector(projs Projections) Features {
 	return fv
 }
 
-func dct(fv Features) Digest {
-	var Digest Digest
+func dct(fv Features) RadonDigest {
+	var RadonDigest RadonDigest
 
 	N := fv.size
 	nb_coeffs := nb_coeffs_radon
 
-	Digest.Coeffs = make([]uint8, nb_coeffs)
+	RadonDigest.Coeffs = make([]uint8, nb_coeffs)
 
-	Digest.Size = nb_coeffs
+	RadonDigest.Size = nb_coeffs
 
 	R := fv.features
 
-	D := Digest.Coeffs
+	D := RadonDigest.Coeffs
 
 	var D_temp [nb_coeffs_radon]float64
 	max := 0.0
@@ -167,10 +167,10 @@ func dct(fv Features) Digest {
 		D[i] = uint8(math.MaxUint8 * (D_temp[i] - min) / (max - min))
 	}
 
-	return Digest
+	return RadonDigest
 }
 
-func CrossCorr(x, y Digest, threshold float64) bool {
+func CrossCorr(x, y RadonDigest, threshold float64) bool {
 
 	N := y.Size
 
@@ -205,7 +205,7 @@ func CrossCorr(x, y Digest, threshold float64) bool {
 	return max > threshold
 }
 
-func Radon(img image.Gray) Digest {
+func Radon(img image.Gray) RadonDigest {
 	imgMtx, err := getImageMatrix(img)
 	if err != nil {
 		panic(err)

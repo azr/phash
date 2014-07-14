@@ -52,7 +52,7 @@ func dctPoint(img image.Gray, u, v, N, M int) float64 {
 	return sum * ((coefficient(u) * coefficient(v)) / 4.0)
 }
 
-func Dct(img image.Gray) uint64 {
+func GreyscaleDct(img image.Gray) uint64 {
 	// func DctImageHashOne(img image.Image) ([][]float64) {
 	R := img.Bounds()
 	N := R.Dx() // width
@@ -108,7 +108,7 @@ func createDctMatrix(N, M int) (*matrix.Dense, error) {
 	return matrix.NewDense(mtx)
 }
 
-func DctMatrix(img image.Gray) uint64 {
+func GreyscaleDctMatrix(img image.Gray) uint64 {
 	imgMtx, err := getImageMatrix(img)
 	if err != nil {
 		panic(err)
