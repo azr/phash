@@ -48,6 +48,18 @@ func grayImageToMatrix(src image.Gray) (*matrix.Dense, error) {
 	return matrix.NewDense(mtx)
 }
 
+func imageToMatrix(src image.Image) (*matrix.Dense, error) {
+	bounds := src.Bounds()
+	mtx := make([][]float64, bounds.Max.X)
+	for x := 0; x < bounds.Max.X; x++ {
+		mtx[x] = make([]float64, bounds.Max.Y)
+		for y := 0; y < bounds.Max.Y; y++ {
+			mtx[x][y] = ColorToFloat64(src.At(x, y))
+		}
+	}
+	return matrix.NewDense(mtx)
+}
+
 func max(a, b int) int {
 	if a > b {
 		return a

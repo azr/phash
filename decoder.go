@@ -45,11 +45,9 @@ func (d *Digest) ComputeGreyscaleDctMatrix() error {
 	return nil
 }
 
-//ComputeGreyscaleRadonDigest puts the result of Radon in a digest
-func (d *Digest) ComputeGreyscaleRadonDigest() error {
-	// stamp := resize.Resize(32, 32, d.Image, resize.Bilinear)
-	greyscaleStamp := Gscl(d.Image)
-	imgMtx, err := grayImageToMatrix(greyscaleStamp)
+//ComputeRadonDigest puts the result of Radon in a digest
+func (d *Digest) ComputeRadonDigest() error {
+	imgMtx, err := imageToMatrix(d.Image)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +70,7 @@ func DecodeAndDigest(r io.Reader) (digest *Digest, err error) {
 
 	digest.ComputeGreyscaleDctMatrix()
 	digest.ComputeGreyscaleDct()
-	digest.ComputeGreyscaleRadonDigest()
+	digest.ComputeRadonDigest()
 
 	return
 }

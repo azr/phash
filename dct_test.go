@@ -2,6 +2,7 @@ package phash
 
 import (
 	"io/ioutil"
+	"strconv"
 	"testing"
 	// "time"
 
@@ -20,6 +21,7 @@ import (
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -135,7 +137,7 @@ func BenchmarkDct(b *testing.B) {
 
 }
 
-func BenchmarkDctMatrix(b *testing.B) {
+func BenchmarkGreyscaleDctMatrix(b *testing.B) {
 
 	images := loadImages()
 	b.ResetTimer()
@@ -207,12 +209,7 @@ func (img *ImageBag) ComputeImageHashRadon(force bool) {
 		return
 	}
 
-	imgMtx, err := imageToMatrix(img.Image)
-	if err != nil {
-		panic(err)
-	}
-
-	img.Digest.RadonDigest = Radon(imgMtx)
+	img.Digest.ComputeRadonDigest()
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
@@ -260,4 +257,14 @@ func (img *ImageBag) CompareWithImages(images []ImageBag) {
 	}
 
 	return
+}
+
+func TestColor(t *testing.T) {
+	c := color.RGBA{251, 252, 253, 254}
+	hex := ColorToHexString(c)
+	n, _ := strconv.ParseInt(hex, 0, 64)
+
+	if n != int64(ColorToFloat64(c)) {
+		t.Fatal("Color convertion not equal ?")
+	}
 }
