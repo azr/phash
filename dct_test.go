@@ -19,7 +19,7 @@ import (
 	// image.Decode to understand [jpeg|gif|png] formatted images.
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
-    _ "code.google.com/p/graphics-go/graphics"
+	_ "code.google.com/p/graphics-go/graphics"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -34,12 +34,12 @@ type Angle float64
 
 type ImageBag struct {
 	Digest
-	CPhash		uint64
-	Angle		Angle
-	Rotations	map[Angle]*ImageBag
-	Dir			string
-	Filename	string
-	parsed		bool
+	CPhash    uint64
+	Angle     Angle
+	Rotations map[Angle]*ImageBag
+	Dir       string
+	Filename  string
+	parsed    bool
 }
 
 var angles = []Angle{90, 180, 360}
