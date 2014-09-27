@@ -4,12 +4,17 @@ import (
 	"fmt"
 	"github.com/nfnt/resize"
 	"image"
+	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
+	// but is imported for its initialization side-effect, which allows
+	// image.Decode to understand [jpeg|gif|png] formatted images.
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
 )
 
+//Digest will contain digested dct/radon/other digest
+//of an image
 type Digest struct {
 	Image       image.Image
 	Format      string
@@ -18,6 +23,7 @@ type Digest struct {
 	RadonDigest RadonDigest
 }
 
+//ComputeGreyscaleDct puts the result of GreyscaleDct in a digest
 func (d *Digest) ComputeGreyscaleDct() error {
 	stamp := resize.Resize(32, 32, d.Image, resize.Bilinear)
 	greyscaleStamp := Gscl(stamp)
@@ -28,6 +34,7 @@ func (d *Digest) ComputeGreyscaleDct() error {
 	return nil
 }
 
+//ComputeGreyscaleDctMatrix puts the result of GreyscaleDctMatrix in a digest
 func (d *Digest) ComputeGreyscaleDctMatrix() error {
 	stamp := resize.Resize(32, 32, d.Image, resize.Bilinear)
 	greyscaleStamp := Gscl(stamp)
@@ -38,6 +45,7 @@ func (d *Digest) ComputeGreyscaleDctMatrix() error {
 	return nil
 }
 
+//ComputeGreyscaleRadonDigest puts the result of Radon in a digest
 func (d *Digest) ComputeGreyscaleRadonDigest() error {
 	// stamp := resize.Resize(32, 32, d.Image, resize.Bilinear)
 	greyscaleStamp := Gscl(d.Image)
@@ -51,7 +59,8 @@ func (d *Digest) ComputeGreyscaleRadonDigest() error {
 	return nil
 }
 
-func Decode(r io.Reader) (digest *Digest, err error) {
+//DecodeAndDigest reads an image and fills all the fields of a Digest
+func DecodeAndDigest(r io.Reader) (digest *Digest, err error) {
 	digest = new(Digest)
 	if digest == nil {
 		return nil, fmt.Errorf("Could not allocate Digest memory")

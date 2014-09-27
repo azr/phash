@@ -25,10 +25,10 @@ import (
 	_ "image/png"
 )
 
-var cats_dir = "./testdata/cats/"
-var lena_dir = "./testdata/lena/"
+var catsDir = "./testdata/cats/"
+var lenaDir = "./testdata/lena/"
 
-var gimages []ImageBag = nil
+var gimages []ImageBag
 
 type Angle float64
 
@@ -86,7 +86,7 @@ func parseDirs(ch chan<- ImageBag, dirs ...string) (images []ImageBag) {
 
 func loadImages() []ImageBag {
 	if gimages == nil {
-		gimages = parseDirs(nil, lena_dir, cats_dir)
+		gimages = parseDirs(nil, lenaDir, catsDir)
 	}
 	return gimages
 }
@@ -99,21 +99,20 @@ func loadImagesAsync() <-chan ImageBag {
 		}
 		close(ch)
 		return ch
-	} else {
-		ch := make(chan ImageBag)
-		resChan := make(chan ImageBag)
-		go parseDirs(ch, lena_dir, cats_dir)
-		go func() {
-			var images []ImageBag
-			for img := range ch {
-				resChan <- img
-				images = append(images, img)
-			}
-			close(resChan)
-			gimages = images
-		}()
-		return resChan
 	}
+	ch := make(chan ImageBag)
+	resChan := make(chan ImageBag)
+	go parseDirs(ch, lenaDir, catsDir)
+	go func() {
+		var images []ImageBag
+		for img := range ch {
+			resChan <- img
+			images = append(images, img)
+		}
+		close(resChan)
+		gimages = images
+	}()
+	return resChan
 }
 
 // func TestTimeConsuming(t *testing.T) {
@@ -208,9 +207,7 @@ func (img *ImageBag) ComputeImageHashRadon(force bool) {
 		return
 	}
 
-	// stamp := resize.Resize(32, 32, img.Image, resize.Bilinear)
-	greyscaleStamp := Gscl(img.Image)
-	imgMtx, err := grayImageToMatrix(greyscaleStamp)
+	imgMtx, err := imageToMatrix(img.Image)
 	if err != nil {
 		panic(err)
 	}
@@ -234,7 +231,7 @@ func (img *ImageBag) InitialiseFromFileInfo() {
 	return
 }
 
-func (image *ImageBag) CompareWithImages(images []ImageBag) {
+func (img *ImageBag) CompareWithImages(images []ImageBag) {
 	for _, comparedImage := range images {
 		if comparedImage.parsed == true {
 			continue

@@ -7,6 +7,7 @@ import (
 	"image/draw"
 )
 
+// HammingDistance computes hamming distance between two dtc hashes
 func HammingDistance(hash1, hash2 uint64) uint64 {
 	x := hash1 ^ hash2
 	var m1, m2, h01, m4 uint64 = 0x5555555555555555, 0x3333333333333333, 0x0101010101010101, 0x0f0f0f0f0f0f0f0f
@@ -54,6 +55,7 @@ func max(a, b int) int {
 	return b
 }
 
+//Gscl returns the greyscale of an image
 func Gscl(src image.Image) image.Gray {
 	// Create a new grayscale image
 	bounds := src.Bounds()
@@ -67,6 +69,7 @@ func Gscl(src image.Image) image.Gray {
 	return *gray
 }
 
+//CopyImage copies images into a draw.Image
 func CopyImage(src image.Image) draw.Image {
 	b := src.Bounds()
 	copy := image.NewRGBA(b)

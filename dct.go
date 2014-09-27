@@ -3,11 +3,11 @@ package phash
 import (
 	"image"
 	// "github.com/hawx/img/greyscale"
+	"code.google.com/p/biogo.matrix"
 
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	"code.google.com/p/biogo.matrix"
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
@@ -52,6 +52,7 @@ func dctPoint(img image.Gray, u, v, N, M int) float64 {
 	return sum * ((coefficient(u) * coefficient(v)) / 4.0)
 }
 
+// GreyscaleDct Computes the Dct of a greyscale image
 func GreyscaleDct(img image.Gray) uint64 {
 	// func DctImageHashOne(img image.Image) ([][]float64) {
 	R := img.Bounds()
@@ -74,7 +75,7 @@ func GreyscaleDct(img image.Gray) uint64 {
 	}
 	total -= DCTMatrix[0][0]
 	avg := total / float64(((N/2)*(M/2))-1)
-	var hash uint64 = 0
+	var hash uint64
 	for u := 0; u < N/2; u++ {
 		for v := 0; v < M/2; v++ {
 			hash = hash * 2
@@ -108,6 +109,7 @@ func createDctMatrix(N, M int) (*matrix.Dense, error) {
 	return matrix.NewDense(mtx)
 }
 
+// GreyscaleDctMatrix Computes the Dct of a greyscale image using matrixes
 func GreyscaleDctMatrix(img image.Gray) uint64 {
 	imgMtx, err := grayImageToMatrix(img)
 	if err != nil {

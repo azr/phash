@@ -6,12 +6,13 @@ import (
 )
 
 const (
-	nb_coeffs_radon = 80
+	nbCoeffsRadon = 80
 )
 
+//Projections contains radon projections of image of angled lines through center
 type Projections struct {
-	R              matrix.Matrix //contains projections of image of angled lines through center
-	nb_pix_perline []int         //the head of int array denoting the number of pixels of each line
+	R            matrix.Matrix //projections
+	nbPixPerline []int         //the head of int array denoting the number of pixels of each line
 }
 
 type Features struct {
@@ -28,35 +29,35 @@ func radonProjections(img matrix.Matrix, N int) (Projections, error) {
 	width, height := img.Dims()
 
 	D := max(width, height)
-	var x_center, y_center float64 = float64(width) / 2.0, float64(height) / 2.0
+	var xCenter, yCenter float64 = float64(width) / 2.0, float64(height) / 2.0
 
-	x_off := int(math.Floor(x_center + roundingFactor(x_center)))
-	y_off := int(math.Floor(y_center + roundingFactor(y_center)))
+	xOff := int(math.Floor(xCenter + roundingFactor(xCenter)))
+	yOff := int(math.Floor(yCenter + roundingFactor(yCenter)))
 
-	radon_map, err := matrix.ZeroDense(N, D)
+	radonMap, err := matrix.ZeroDense(N, D)
 	if err != nil {
 		return projs, err
 	}
-	projs.R = radon_map
+	projs.R = radonMap
 
-	projs.nb_pix_perline = make([]int, N)
-	nb_per_line := projs.nb_pix_perline
+	projs.nbPixPerline = make([]int, N)
+	nbPerLine := projs.nbPixPerline
 
 	for k := 0; k < N/4+1; k++ {
 		theta := float64(k) * math.Pi / float64(N)
 		alpha := math.Tan(theta)
 		for x := 0; x < D; x++ {
 
-			y := alpha * float64(x-x_off)
+			y := alpha * float64(x-xOff)
 			yd := int(math.Floor(y + roundingFactor(y)))
 
-			if (yd+y_off >= 0) && (yd+y_off < height) && (x < width) {
-				radon_map.Set(k, x, img.At(x, yd+y_off))
-				nb_per_line[k] += 1
+			if (yd+yOff >= 0) && (yd+yOff < height) && (x < width) {
+				radonMap.Set(k, x, img.At(x, yd+yOff))
+				nbPerLine[k]++
 			}
-			if (yd+x_off >= 0) && (yd+x_off < width) && (k != N/4) && (x < height) {
-				radon_map.Set(N/2-k, x, img.At(yd+x_off, x))
-				nb_per_line[N/2-k] += 1
+			if (yd+xOff >= 0) && (yd+xOff < width) && (k != N/4) && (x < height) {
+				radonMap.Set(N/2-k, x, img.At(yd+xOff, x))
+				nbPerLine[N/2-k]++
 			}
 
 		}
@@ -66,15 +67,15 @@ func radonProjections(img matrix.Matrix, N int) (Projections, error) {
 		theta := float64(k) * math.Pi / float64(N)
 		alpha := math.Tan(theta)
 		for x := 0; x < D; x++ {
-			y := alpha * float64(x-x_off)
+			y := alpha * float64(x-xOff)
 			yd := int(math.Floor(y + roundingFactor(y)))
-			if (yd+y_off >= 0) && (yd+y_off < height) && (x < width) {
-				radon_map.Set(k, x, img.At(x, yd+y_off))
-				nb_per_line[k] += 1
+			if (yd+yOff >= 0) && (yd+yOff < height) && (x < width) {
+				radonMap.Set(k, x, img.At(x, yd+yOff))
+				nbPerLine[k]++
 			}
-			if (y_off-yd >= 0) && (y_off-yd < width) && (2*y_off-x >= 0) && (2*y_off-x < height) && (k != 3*N/4) {
-				radon_map.Set(k-j, x, img.At(-yd+y_off, -(x-y_off)+y_off))
-				nb_per_line[k-j] += 1
+			if (yOff-yd >= 0) && (yOff-yd < width) && (2*yOff-x >= 0) && (2*yOff-x < height) && (k != 3*N/4) {
+				radonMap.Set(k-j, x, img.At(-yd+yOff, -(x-yOff)+yOff))
+				nbPerLine[k-j]++
 			}
 
 		}
@@ -87,33 +88,33 @@ func radonProjections(img matrix.Matrix, N int) (Projections, error) {
 
 func featureVector(projs Projections) Features {
 	var fv Features
-	projection_map := projs.R
-	nb_perline := projs.nb_pix_perline
-	N := len(projs.nb_pix_perline)
-	_, D := projection_map.Dims()
+	projectionMap := projs.R
+	nbPerline := projs.nbPixPerline
+	N := len(projs.nbPixPerline)
+	_, D := projectionMap.Dims()
 
 	fv.features = make([]float64, N)
 
-	feat_v := fv.features
+	featV := fv.features
 	sum := 0.0
-	sum_sqd := 0.0
+	sumSqd := 0.0
 	for k := 0; k < N; k++ {
-		line_sum := 0.0
-		line_sum_sqd := 0.0
-		nb_pixels := nb_perline[k]
+		lineSum := 0.0
+		lineSumSqd := 0.0
+		nbPixels := nbPerline[k]
 		for i := 0; i < D; i++ {
-			line_sum += projection_map.At(k, i)
-			line_sum_sqd += projection_map.At(k, i) * projection_map.At(k, i)
+			lineSum += projectionMap.At(k, i)
+			lineSumSqd += projectionMap.At(k, i) * projectionMap.At(k, i)
 		}
-		feat_v[k] = (line_sum_sqd / float64(nb_pixels)) - (line_sum*line_sum)/float64(nb_pixels*nb_pixels)
-		sum += feat_v[k]
-		sum_sqd += feat_v[k] * feat_v[k]
+		featV[k] = (lineSumSqd / float64(nbPixels)) - (lineSum*lineSum)/float64(nbPixels*nbPixels)
+		sum += featV[k]
+		sumSqd += featV[k] * featV[k]
 	}
 	mean := sum / float64(N)
-	variable := math.Sqrt((sum_sqd / float64(N)) - (sum*sum)/float64(N*N))
+	variable := math.Sqrt((sumSqd / float64(N)) - (sum*sum)/float64(N*N))
 
 	for i := 0; i < N; i++ {
-		feat_v[i] = (feat_v[i] - mean) / variable
+		featV[i] = (featV[i] - mean) / variable
 	}
 
 	return fv
@@ -123,58 +124,60 @@ func dct(fv Features) RadonDigest {
 	var RadonDigest RadonDigest
 
 	N := len(fv.features)
-	nb_coeffs := nb_coeffs_radon
+	nbCoeffs := nbCoeffsRadon
 
-	RadonDigest.Coeffs = make([]uint8, nb_coeffs)
+	RadonDigest.Coeffs = make([]uint8, nbCoeffs)
 
 	R := fv.features
 
 	D := RadonDigest.Coeffs
 
-	var D_temp [nb_coeffs_radon]float64
+	var DTemp [nbCoeffsRadon]float64
 	max := 0.0
 	min := 0.0
 
-	for k := 0; k < nb_coeffs; k++ {
+	for k := 0; k < nbCoeffs; k++ {
 		sum := 0.0
 		for n := 0; n < N; n++ {
 			temp := R[n] * math.Cos((math.Pi*float64((2*n+1)*k))/float64(2*N))
 			sum += temp
 		}
 		if k == 0 {
-			D_temp[k] = sum / math.Sqrt(float64(N))
+			DTemp[k] = sum / math.Sqrt(float64(N))
 		} else {
-			D_temp[k] = sum * math.Sqrt(2) / math.Sqrt(float64(N))
+			DTemp[k] = sum * math.Sqrt(2) / math.Sqrt(float64(N))
 		}
-		if D_temp[k] > max {
-			max = D_temp[k]
+		if DTemp[k] > max {
+			max = DTemp[k]
 		}
-		if D_temp[k] < min {
-			min = D_temp[k]
+		if DTemp[k] < min {
+			min = DTemp[k]
 		}
 
 	}
 
-	for i := 0; i < nb_coeffs; i++ {
-		D[i] = uint8(math.MaxUint8 * (D_temp[i] - min) / (max - min))
+	for i := 0; i < nbCoeffs; i++ {
+		D[i] = uint8(math.MaxUint8 * (DTemp[i] - min) / (max - min))
 	}
 
 	return RadonDigest
 }
 
+//CrossCorr tells radon digests cross coordinates
+//are not over threshold
 func CrossCorr(x, y RadonDigest, threshold float64) bool {
 
 	N := len(y.Coeffs)
 
-	x_coeffs := x.Coeffs
-	y_coeffs := y.Coeffs
+	xCoeffs := x.Coeffs
+	yCoeffs := y.Coeffs
 
 	r := make([]float64, N)
 	sumx := 0.0
 	sumy := 0.0
 	for i := 0; i < N; i++ {
-		sumx += float64(x_coeffs[i])
-		sumy += float64(y_coeffs[i])
+		sumx += float64(xCoeffs[i])
+		sumy += float64(yCoeffs[i])
 	}
 	meanx := sumx / float64(N)
 	meany := sumy / float64(N)
@@ -184,9 +187,9 @@ func CrossCorr(x, y RadonDigest, threshold float64) bool {
 		denx := 0.0
 		deny := 0.0
 		for i := 0; i < N; i++ {
-			num += (float64(x_coeffs[i]) - meanx) * (float64(y_coeffs[(N+i-d)%N]) - meany)
-			denx += math.Pow((float64(x_coeffs[i]) - meanx), 2)
-			deny += math.Pow((float64(y_coeffs[(N+i-d)%N]) - meany), 2)
+			num += (float64(xCoeffs[i]) - meanx) * (float64(yCoeffs[(N+i-d)%N]) - meany)
+			denx += math.Pow((float64(xCoeffs[i]) - meanx), 2)
+			deny += math.Pow((float64(yCoeffs[(N+i-d)%N]) - meany), 2)
 		}
 		r[d] = num / math.Sqrt(denx*deny)
 		if r[d] > float64(max) {
@@ -197,6 +200,7 @@ func CrossCorr(x, y RadonDigest, threshold float64) bool {
 	return max > threshold
 }
 
+//Radon computes radon digest of img matrix
 func Radon(img *matrix.Dense) RadonDigest {
 	radonProjection, err := radonProjections(img, img.Unsafe().Rows)
 	if err != nil {
