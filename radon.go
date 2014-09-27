@@ -13,17 +13,14 @@ const (
 type Projections struct {
 	R              matrix.Matrix //contains projections of image of angled lines through center
 	nb_pix_perline []int         //the head of int array denoting the number of pixels of each line
-	size           int           //the size of nb_pix_perline
 }
 
 type Features struct {
 	features []float64 //the head of the feature array of double's
-	size     int       //the size of the feature array
 }
 
 type RadonDigest struct {
 	Coeffs []uint8 //the head of the Radondigest integer coefficient array
-	Size   int     //the size of the coeff array
 }
 
 func radonProjections(img matrix.Matrix, N int) (Projections, error) {
@@ -44,7 +41,6 @@ func radonProjections(img matrix.Matrix, N int) (Projections, error) {
 	projs.R = radon_map
 
 	projs.nb_pix_perline = make([]int, N)
-	projs.size = N
 	nb_per_line := projs.nb_pix_perline
 
 	for k := 0; k < N/4+1; k++ {
@@ -94,11 +90,10 @@ func featureVector(projs Projections) Features {
 	var fv Features
 	projection_map := projs.R
 	nb_perline := projs.nb_pix_perline
-	N := projs.size
+	N := len(projs.nb_pix_perline)
 	_, D := projection_map.Dims()
 
 	fv.features = make([]float64, N)
-	fv.size = N
 
 	feat_v := fv.features
 	sum := 0.0
@@ -128,12 +123,10 @@ func featureVector(projs Projections) Features {
 func dct(fv Features) RadonDigest {
 	var RadonDigest RadonDigest
 
-	N := fv.size
+	N := len(fv.features)
 	nb_coeffs := nb_coeffs_radon
 
 	RadonDigest.Coeffs = make([]uint8, nb_coeffs)
-
-	RadonDigest.Size = nb_coeffs
 
 	R := fv.features
 
@@ -172,7 +165,7 @@ func dct(fv Features) RadonDigest {
 
 func CrossCorr(x, y RadonDigest, threshold float64) bool {
 
-	N := y.Size
+	N := len(y.Coeffs)
 
 	x_coeffs := x.Coeffs
 	y_coeffs := y.Coeffs

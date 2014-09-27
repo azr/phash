@@ -124,9 +124,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             cat_medium.ComputeImageHashRadon(false)
 
             Convey("Then the hashes should not be zero", func() {
-                So( cat_big.Digest.RadonDigest.Size , ShouldNotEqual, 0 )
+                So( len(cat_big.Digest.RadonDigest.Coeffs) , ShouldNotEqual, 0 )
                 So( cat_big.Digest.RadonDigest.Coeffs , ShouldNotBeNil )
-                So( cat_medium.Digest.RadonDigest.Size , ShouldNotEqual, 0 )
+                So( len(cat_medium.Digest.RadonDigest.Coeffs) , ShouldNotEqual, 0 )
                 So( cat_medium.Digest.RadonDigest.Coeffs , ShouldNotBeNil )
             })
 
@@ -201,9 +201,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
             sun_small.ComputeImageHashRadon(false)
 
             Convey("Then the hashes should not be zero", func() {
-                So( sun_big.Digest.RadonDigest.Size , ShouldNotEqual, 0 )
+                So( len(sun_big.Digest.RadonDigest.Coeffs) , ShouldNotEqual, 0 )
                 So( sun_big.Digest.RadonDigest.Coeffs , ShouldNotBeNil )
-                So( sun_small.Digest.RadonDigest.Size , ShouldNotEqual, 0 )
+                So( len(sun_small.Digest.RadonDigest.Coeffs) , ShouldNotEqual, 0 )
                 So( sun_small.Digest.RadonDigest.Coeffs , ShouldNotBeNil )
             })
 

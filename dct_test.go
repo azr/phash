@@ -204,7 +204,7 @@ func (img *ImageBag) ComputeImageHashPhash(force bool) {
 }
 
 func (img *ImageBag) ComputeImageHashRadon(force bool) {
-	if force == false && img.Digest.RadonDigest.Size != 0 {
+	if force == false && len(img.Digest.RadonDigest.Coeffs) != 0 {
 		return
 	}
 
