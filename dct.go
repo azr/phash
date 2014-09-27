@@ -109,7 +109,7 @@ func createDctMatrix(N, M int) (*matrix.Dense, error) {
 }
 
 func GreyscaleDctMatrix(img image.Gray) uint64 {
-	imgMtx, err := getImageMatrix(img)
+	imgMtx, err := grayImageToMatrix(img)
 	if err != nil {
 		panic(err)
 	}

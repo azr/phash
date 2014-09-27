@@ -210,7 +210,12 @@ func (img *ImageBag) ComputeImageHashRadon(force bool) {
 
 	// stamp := resize.Resize(32, 32, img.Image, resize.Bilinear)
 	greyscaleStamp := Gscl(img.Image)
-	img.Digest.RadonDigest = Radon(greyscaleStamp)
+	imgMtx, err := grayImageToMatrix(greyscaleStamp)
+	if err != nil {
+		panic(err)
+	}
+
+	img.Digest.RadonDigest = Radon(imgMtx)
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {

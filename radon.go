@@ -2,7 +2,6 @@ package phash
 
 import (
 	"code.google.com/p/biogo.matrix"
-	"image"
 	"math"
 )
 
@@ -198,12 +197,8 @@ func CrossCorr(x, y RadonDigest, threshold float64) bool {
 	return max > threshold
 }
 
-func Radon(img image.Gray) RadonDigest {
-	imgMtx, err := getImageMatrix(img)
-	if err != nil {
-		panic(err)
-	}
-	radonProjection, err := radonProjections(imgMtx, img.Bounds().Max.X)
+func Radon(img *matrix.Dense) RadonDigest {
+	radonProjection, err := radonProjections(img, img.Unsafe().Rows)
 	if err != nil {
 		panic(err)
 	}

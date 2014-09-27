@@ -41,8 +41,12 @@ func (d *Digest) ComputeGreyscaleDctMatrix() error {
 func (d *Digest) ComputeGreyscaleRadonDigest() error {
 	// stamp := resize.Resize(32, 32, d.Image, resize.Bilinear)
 	greyscaleStamp := Gscl(d.Image)
+	imgMtx, err := grayImageToMatrix(greyscaleStamp)
+	if err != nil {
+		panic(err)
+	}
 
-	d.RadonDigest = Radon(greyscaleStamp)
+	d.RadonDigest = Radon(imgMtx)
 
 	return nil
 }

@@ -34,7 +34,7 @@ func cropMatrix(src matrix.Matrix, x0, y0, x1, y1 int) (*matrix.Dense, error) {
 	return matrix.NewDense(mtx)
 }
 
-func getImageMatrix(src image.Gray) (*matrix.Dense, error) {
+func grayImageToMatrix(src image.Gray) (*matrix.Dense, error) {
 	bounds := src.Bounds()
 	mtx := make([][]float64, bounds.Max.X)
 	for x := 0; x < bounds.Max.X; x++ {
