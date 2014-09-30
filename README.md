@@ -3,7 +3,7 @@ phash
 
 A simple perceptual hash library for golang. Still in dev !
 
-[![Build Status](https://travis-ci.org/Azer-/phash.svg?branch=master)](https://travis-ci.org/Azer-/phash)
+[![Build Status](https://travis-ci.org/azr/phash.svg?branch=master)](https://travis-ci.org/azr/phash)
 
 Also uses [go-phash](https://github.com/kavu/go-phash) to compare results in tests
 ----------------------------------------------
