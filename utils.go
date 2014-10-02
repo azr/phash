@@ -3,7 +3,6 @@ package phash
 import (
 	"image"
 	"image/color"
-	"image/draw"
 )
 
 // HammingDistance computes hamming distance between two dtc hashes
@@ -28,14 +27,4 @@ func Gscl(src image.Image) image.Gray {
 		}
 	}
 	return *gray
-}
-
-//CopyImage copies images into a draw.Image
-func CopyImage(src image.Image) draw.Image {
-	b := src.Bounds()
-	copy := image.NewRGBA(b)
-
-	draw.Draw(copy, copy.Bounds(), src, b.Min, draw.Src)
-
-	return copy
 }

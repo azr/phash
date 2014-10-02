@@ -3,6 +3,7 @@ package phash
 import (
 	// "github.com/azer-/phash"
 	"code.google.com/p/graphics-go/graphics"
+	"github.com/azr/phash/manipulator"
 	"github.com/azr/phash/radon"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
@@ -26,7 +27,7 @@ func getImgBag(dir, filename string, angle Angle) *ImageBag {
 	if angle != 0 {
 		rotatedImage, found := img.Rotations[angle]
 		if !found {
-			draw := CopyImage(img.Image)
+			draw := manipulator.CopyImage(img.Image)
 			err := graphics.Rotate(draw, img.Image, &graphics.RotateOptions{Angle: float64(angle)})
 			if err != nil {
 				panic(err)

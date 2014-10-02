@@ -3,8 +3,7 @@ package manipulator
 import (
 	"code.google.com/p/biogo.matrix"
 	"image"
-	// "image/color"
-	// "image/draw"
+	"image/draw"
 )
 
 func CropMatrix(src matrix.Matrix, x0, y0, x1, y1 int) (*matrix.Dense, error) {
@@ -41,4 +40,14 @@ func ImageToMatrix(src image.Image) (*matrix.Dense, error) {
 		}
 	}
 	return matrix.NewDense(mtx)
+}
+
+//CopyImage copies images into a draw.Image
+func CopyImage(src image.Image) draw.Image {
+	b := src.Bounds()
+	copy := image.NewRGBA(b)
+
+	draw.Draw(copy, copy.Bounds(), src, b.Min, draw.Src)
+
+	return copy
 }
