@@ -5,8 +5,9 @@ import (
 	"strconv"
 	"testing"
 	// "time"
-
 	"fmt"
+	"github.com/azr/phash/manipulator"
+	"github.com/azr/phash/radon"
 	// "github.com/azer-/phash"
 	cphash "github.com/kavu/go-phash"
 	"image"
@@ -35,7 +36,7 @@ var gimages []ImageBag
 type Angle float64
 
 type ImageBag struct {
-	Digest
+	radon.ImageDigest
 	CPhash    uint64
 	Angle     Angle
 	Rotations map[Angle]*ImageBag
@@ -115,39 +116,6 @@ func loadImagesAsync() <-chan ImageBag {
 	return resChan
 }
 
-// func TestTimeConsuming(t *testing.T) {
-//     if testing.Short() {
-//         t.Skip("skipping test in short mode.")
-//     }
-
-// }
-
-func BenchmarkDct(b *testing.B) {
-
-	images := loadImages()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		for _, img := range images {
-			img.ComputeGreyscaleDct(true)
-		}
-	}
-
-}
-
-func BenchmarkGreyscaleDctMatrix(b *testing.B) {
-
-	images := loadImages()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		for _, img := range images {
-			img.ComputeGreyscaleDctMatrix(true)
-		}
-	}
-
-}
-
 func BenchmarkDctCPhash(b *testing.B) {
 
 	images := loadImages()
@@ -174,22 +142,6 @@ func BenchmarkRadon(b *testing.B) {
 
 }
 
-func (img *ImageBag) ComputeGreyscaleDct(force bool) {
-	if force == false && img.Digest.Phash != 0 {
-		return
-	}
-
-	img.Digest.ComputeGreyscaleDct()
-}
-
-func (img *ImageBag) ComputeGreyscaleDctMatrix(force bool) {
-	if force == false && img.PhashMatrix != 0 {
-		return
-	}
-
-	img.Digest.ComputeGreyscaleDctMatrix()
-}
-
 func (img *ImageBag) ComputeImageHashPhash(force bool) {
 	if force == false && img.CPhash != 0 {
 		return
@@ -203,11 +155,11 @@ func (img *ImageBag) ComputeImageHashPhash(force bool) {
 }
 
 func (img *ImageBag) ComputeImageHashRadon(force bool) {
-	if force == false && len(img.Digest.RadonDigest.Coeffs) != 0 {
+	if force == false && len(img.ImageDigest.ImageDigest.Coeffs) != 0 {
 		return
 	}
 
-	img.Digest.ComputeRadonDigest()
+	img.ImageDigest.ComputeRadonDigest()
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
@@ -259,10 +211,10 @@ func (img *ImageBag) CompareWithImages(images []ImageBag) {
 
 func TestColor(t *testing.T) {
 	c := color.RGBA{251, 252, 253, 254}
-	hex := ColorToHexString(c)
+	hex := manipulator.ColorToHexString(c)
 	n, _ := strconv.ParseInt(hex, 0, 64)
 
-	if n != int64(ColorToFloat64(c)) {
+	if n != int64(manipulator.ColorToFloat64(c)) {
 		t.Fatal("Color convertion not equal ?")
 	}
 }

@@ -1,4 +1,4 @@
-package phash
+package radon
 
 import (
 	"code.google.com/p/biogo.matrix"
@@ -20,17 +20,17 @@ type FeaturesVector struct {
 	features []float64 //the head of the feature array of double's
 }
 
-type RadonDigest struct {
+type Digest struct {
 	Coeffs []uint8 //the head of the Radondigest integer coefficient array
 }
 
-// RadonProjections finds radon projections of N lines running through the image
+// Project finds radon projections of N lines running through the image
 // center for lines angled 0to 180 degrees from horizontal.
 //  /param img - img [Matrix](code.google.com/p/biogo.matrix) src image
 //  /param  N  - int number of angled lines to consider.
 //  /return projs - Projections struct
 //  /return error - if failed
-func RadonProjections(img matrix.Matrix, N int) (Projections, error) {
+func Project(img matrix.Matrix, N int) (Projections, error) {
 	var projs Projections
 	var err error
 	width, height := img.Dims()
@@ -130,18 +130,18 @@ func FeatureVector(projs Projections) FeaturesVector {
 	return fv
 }
 
-//RadonDct Computes the dct of a given vector
-func RadonDct(fv FeaturesVector) RadonDigest {
-	var RadonDigest RadonDigest
+//Dct Computes the radon digest of a given vector
+func Dct(fv FeaturesVector) Digest {
+	var Digest Digest
 
 	N := len(fv.features)
 	nbCoeffs := nbCoeffsRadon
 
-	RadonDigest.Coeffs = make([]uint8, nbCoeffs)
+	Digest.Coeffs = make([]uint8, nbCoeffs)
 
 	R := fv.features
 
-	D := RadonDigest.Coeffs
+	D := Digest.Coeffs
 
 	var DTemp [nbCoeffsRadon]float64
 	max := 0.0
@@ -171,16 +171,16 @@ func RadonDct(fv FeaturesVector) RadonDigest {
 		D[i] = uint8(math.MaxUint8 * (DTemp[i] - min) / (max - min))
 	}
 
-	return RadonDigest
+	return Digest
 }
 
 // CrossCorr Computes the cross correlation of two series vectors
-// param x - RadonDigest struct
-// param y - RadonDigest struct
+// param x - Digest struct
+// param y - Digest struct
 // param threshold - threshold value for which 2 images are considered the same or different.
 //
 // returns (true for similar, false for different), (the peak of cross correlation)
-func CrossCorr(x, y RadonDigest, threshold float64) (bool, float64) {
+func CrossCorr(x, y Digest, threshold float64) (bool, float64) {
 
 	N := len(y.Coeffs)
 
@@ -215,14 +215,14 @@ func CrossCorr(x, y RadonDigest, threshold float64) (bool, float64) {
 	return max > threshold, max
 }
 
-//Radon computes radon digest of img matrix
-func Radon(img *matrix.Dense) RadonDigest {
-	radonProjection, err := RadonProjections(img, 0)
+//DigestMatrix computes radon digest of img matrix
+func DigestMatrix(img *matrix.Dense) Digest {
+	radonProjection, err := Project(img, 0)
 	if err != nil {
 		panic(err)
 	}
 
 	fv := FeatureVector(radonProjection)
-	dctDigest := RadonDct(fv)
+	dctDigest := Dct(fv)
 	return dctDigest
 }

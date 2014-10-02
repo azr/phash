@@ -11,6 +11,7 @@ import (
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
+	"github.com/azr/phash/manipulator"
 	_ "github.com/kavu/go-phash"
 	_ "github.com/nfnt/resize"
 	_ "github.com/smartystreets/goconvey/convey"
@@ -111,7 +112,7 @@ func createDctMatrix(N, M int) (*matrix.Dense, error) {
 
 // GreyscaleDctMatrix Computes the Dct of a greyscale image using matrixes
 func GreyscaleDctMatrix(img image.Gray) uint64 {
-	imgMtx, err := grayImageToMatrix(img)
+	imgMtx, err := manipulator.GrayImageToMatrix(img)
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +124,7 @@ func GreyscaleDctMatrix(img image.Gray) uint64 {
 
 	dctImage := dctMtx.Dot(imgMtx, nil).Dot(dctMtxTransp, nil)
 
-	dctImage, err = cropMatrix(dctImage, 0, 0, 7, 7)
+	dctImage, err = manipulator.CropMatrix(dctImage, 0, 0, 7, 7)
 	if err != nil {
 		panic(err)
 	}
