@@ -134,7 +134,8 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 			Convey("Then the Cross Correlation for threshold should be true", func() {
-				So(CrossCorr(catBig.Digest.RadonDigest, catMedium.Digest.RadonDigest, 0.01), ShouldBeTrue)
+				crossCoorrelation, _ := CrossCorr(catBig.Digest.RadonDigest, catMedium.Digest.RadonDigest, 0.01)
+				So(crossCoorrelation, ShouldBeTrue)
 			})
 
 		})
@@ -210,8 +211,10 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 
 			SkipConvey("Then the Cross Correlation for threshold should be true", func() {
 
-				So(CrossCorr(sunBig.Digest.RadonDigest, sunSmall.Digest.RadonDigest, -0.1), ShouldBeTrue)
-				So(CrossCorr(sunBig.Digest.RadonDigest, sunSmall.Digest.RadonDigest, 0.0), ShouldBeTrue)
+				crossCoorrelation, _ := CrossCorr(sunBig.Digest.RadonDigest, sunSmall.Digest.RadonDigest, -0.1)
+				So(crossCoorrelation, ShouldBeTrue)
+				crossCoorrelation, _ = CrossCorr(sunBig.Digest.RadonDigest, sunSmall.Digest.RadonDigest, 0.0)
+				So(crossCoorrelation, ShouldBeTrue)
 			})
 
 		})
@@ -372,19 +375,22 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
 			Convey("Then cats do not look like girls", func() {
 				PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-					So(CrossCorr(cat.Digest.RadonDigest, girl.Digest.RadonDigest, 0.8), ShouldBeFalse)
+					crossCoorrelation, _ := CrossCorr(cat.Digest.RadonDigest, girl.Digest.RadonDigest, 0.8)
+					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
 
 			Convey("And suns do not look like cats", func() {
 				PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-					So(CrossCorr(sun.Digest.RadonDigest, cat.Digest.RadonDigest, 0.8), ShouldBeFalse)
+					crossCoorrelation, _ := CrossCorr(sun.Digest.RadonDigest, cat.Digest.RadonDigest, 0.8)
+					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
 
 			Convey("And girls do not look like suns", func() {
 				PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-					So(CrossCorr(girl.Digest.RadonDigest, sun.Digest.RadonDigest, 0.8), ShouldBeFalse)
+					crossCoorrelation, _ := CrossCorr(girl.Digest.RadonDigest, sun.Digest.RadonDigest, 0.8)
+					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
 
