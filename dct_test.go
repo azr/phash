@@ -46,8 +46,6 @@ type ImageBag struct {
 
 var angles = []Angle{90, 180, 360}
 
-var Treshold = uint64(17)
-
 func parseDirs(ch chan<- ImageBag, dirs ...string) (images []ImageBag) {
 
 	for _, dir := range dirs {

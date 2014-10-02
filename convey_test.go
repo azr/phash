@@ -9,6 +9,8 @@ import (
 
 var testImages = map[string]*ImageBag{}
 
+var Treshold = uint64(17)
+
 func getImgBag(dir, filename string, angle Angle) *ImageBag {
 	img, found := testImages[dir+filename]
 	if !found {

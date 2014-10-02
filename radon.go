@@ -23,11 +23,13 @@ type RadonDigest struct {
 	Coeffs []uint8 //the head of the Radondigest integer coefficient array
 }
 
-func radonProjections(img matrix.Matrix, N int) (Projections, error) {
+// RadonProjections calculates RadonProjections of an img [Matrix](code.google.com/p/biogo.matrix)
+func RadonProjections(img matrix.Matrix) (Projections, error) {
 	var projs Projections
 	var err error
 	width, height := img.Dims()
 
+	N := height
 	D := max(width, height)
 	var xCenter, yCenter float64 = float64(width) / 2.0, float64(height) / 2.0
 
@@ -83,7 +85,6 @@ func radonProjections(img matrix.Matrix, N int) (Projections, error) {
 	}
 
 	return projs, nil
-
 }
 
 func featureVector(projs Projections) Features {
@@ -120,7 +121,7 @@ func featureVector(projs Projections) Features {
 	return fv
 }
 
-func dct(fv Features) RadonDigest {
+func RadonDct(fv Features) RadonDigest {
 	var RadonDigest RadonDigest
 
 	N := len(fv.features)
@@ -163,9 +164,13 @@ func dct(fv Features) RadonDigest {
 	return RadonDigest
 }
 
-//CrossCorr tells radon digests cross coordinates
-//are not over threshold
-func CrossCorr(x, y RadonDigest, threshold float64) bool {
+// CrossCorr Computes the cross correlation of two series vectors
+// param x - RadonDigest struct
+// param y - RadonDigest struct
+// param threshold - threshold value for which 2 images are considered the same or different.
+//
+// returns (true for similar, false for different), (the peak of cross correlation)
+func CrossCorr(x, y RadonDigest, threshold float64) (bool, float64) {
 
 	N := len(y.Coeffs)
 
@@ -197,17 +202,17 @@ func CrossCorr(x, y RadonDigest, threshold float64) bool {
 		}
 	}
 
-	return max > threshold
+	return max > threshold, max
 }
 
 //Radon computes radon digest of img matrix
 func Radon(img *matrix.Dense) RadonDigest {
-	radonProjection, err := radonProjections(img, img.Unsafe().Rows)
+	radonProjection, err := RadonProjections(img)
 	if err != nil {
 		panic(err)
 	}
 
 	fv := featureVector(radonProjection)
-	dctDigest := dct(fv)
+	dctDigest := RadonDct(fv)
 	return dctDigest
 }
