@@ -15,7 +15,8 @@ type Projections struct {
 	nbPixPerline []int         //the head of int array denoting the number of pixels of each line
 }
 
-type Features struct {
+//FeaturesVector contains feature vector info
+type FeaturesVector struct {
 	features []float64 //the head of the feature array of double's
 }
 
@@ -23,13 +24,20 @@ type RadonDigest struct {
 	Coeffs []uint8 //the head of the Radondigest integer coefficient array
 }
 
-// RadonProjections calculates RadonProjections of an img [Matrix](code.google.com/p/biogo.matrix)
-func RadonProjections(img matrix.Matrix) (Projections, error) {
+// RadonProjections finds radon projections of N lines running through the image
+// center for lines angled 0to 180 degrees from horizontal.
+//  /param img - img [Matrix](code.google.com/p/biogo.matrix) src image
+//  /param  N  - int number of angled lines to consider.
+//  /return projs - Projections struct
+//  /return error - if failed
+func RadonProjections(img matrix.Matrix, N int) (Projections, error) {
 	var projs Projections
 	var err error
 	width, height := img.Dims()
 
-	N := height
+	if N == 0 {
+		N = height
+	}
 	D := max(width, height)
 	var xCenter, yCenter float64 = float64(width) / 2.0, float64(height) / 2.0
 
@@ -87,8 +95,9 @@ func RadonProjections(img matrix.Matrix) (Projections, error) {
 	return projs, nil
 }
 
-func featureVector(projs Projections) Features {
-	var fv Features
+//FeatureVector computes the feature vector from a radon projection map.
+func FeatureVector(projs Projections) FeaturesVector {
+	var fv FeaturesVector
 	projectionMap := projs.R
 	nbPerline := projs.nbPixPerline
 	N := len(projs.nbPixPerline)
@@ -121,7 +130,8 @@ func featureVector(projs Projections) Features {
 	return fv
 }
 
-func RadonDct(fv Features) RadonDigest {
+//RadonDct Computes the dct of a given vector
+func RadonDct(fv FeaturesVector) RadonDigest {
 	var RadonDigest RadonDigest
 
 	N := len(fv.features)
@@ -207,12 +217,12 @@ func CrossCorr(x, y RadonDigest, threshold float64) (bool, float64) {
 
 //Radon computes radon digest of img matrix
 func Radon(img *matrix.Dense) RadonDigest {
-	radonProjection, err := RadonProjections(img)
+	radonProjection, err := RadonProjections(img, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	fv := featureVector(radonProjection)
+	fv := FeatureVector(radonProjection)
 	dctDigest := RadonDct(fv)
 	return dctDigest
 }
