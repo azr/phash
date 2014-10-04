@@ -12,8 +12,9 @@ import (
 	_ "code.google.com/p/go.image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
 	"github.com/azr/phash/manipulator"
-	_ "github.com/kavu/go-phash"
-	_ "github.com/nfnt/resize"
+	"github.com/azr/phash/radon"
+	// _ "github.com/kavu/go-phash"
+	"github.com/nfnt/resize"
 	_ "github.com/smartystreets/goconvey/convey"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -139,4 +140,26 @@ func GreyscaleDctMatrix(img image.Gray) uint64 {
 		one = one << 1
 	}
 	return hash
+}
+
+//ComputeGreyscaleDct puts the result of GreyscaleDct in a digest
+func (d *ImageDigest) ComputeGreyscaleDct() error {
+	stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
+	greyscaleStamp := Gscl(stamp)
+
+	// greyscaleStamp := greyscale.Greyscale(stamp)
+	d.Phash = GreyscaleDct(greyscaleStamp)
+
+	return nil
+}
+
+//ComputeGreyscaleDctMatrix puts the result of GreyscaleDctMatrix in a digest
+func (d *ImageDigest) ComputeGreyscaleDctMatrix() error {
+	stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
+	greyscaleStamp := Gscl(stamp)
+
+	// greyscaleStamp := greyscale.Greyscale(stamp)
+	d.PhashMatrix = GreyscaleDctMatrix(greyscaleStamp)
+
+	return nil
 }

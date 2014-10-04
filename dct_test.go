@@ -1,4 +1,4 @@
-package phash
+package phash_test
 
 import (
 	"io/ioutil"
@@ -7,8 +7,8 @@ import (
 	// "time"
 	"fmt"
 	"github.com/azr/phash/manipulator"
-	"github.com/azr/phash/radon"
-	// "github.com/azer-/phash"
+	// "github.com/azr/phash/radon"
+	"github.com/azr/phash"
 	cphash "github.com/kavu/go-phash"
 	"image"
 	"os"
@@ -36,7 +36,7 @@ var gimages []ImageBag
 type Angle float64
 
 type ImageBag struct {
-	radon.ImageDigest
+	phash.ImageDigest
 	CPhash    uint64
 	Angle     Angle
 	Rotations map[Angle]*ImageBag
@@ -155,11 +155,11 @@ func (img *ImageBag) ComputeImageHashPhash(force bool) {
 }
 
 func (img *ImageBag) ComputeImageHashRadon(force bool) {
-	if force == false && len(img.ImageDigest.ImageDigest.Coeffs) != 0 {
+	if force == false && len(img.ImageDigest.Radon.Digest.Coeffs) != 0 {
 		return
 	}
 
-	img.ImageDigest.ComputeRadonDigest()
+	img.ImageDigest.Radon.ComputeRadonDigest()
 }
 
 func (img *ImageBag) InitialiseFromFileInfo() {
@@ -172,8 +172,8 @@ func (img *ImageBag) InitialiseFromFileInfo() {
 	if err != nil {
 		panic(err)
 	}
-	img.Image = Image
-	img.Format = format
+	img.Radon.Image = Image
+	img.Radon.Format = format
 
 	return
 }
