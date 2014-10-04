@@ -16,11 +16,9 @@ import (
 //ImageDigest will contain digested dct/radon/other digest
 //of an image
 type ImageDigest struct {
-	Image       image.Image
-	Format      string
-	Phash       uint64
-	PhashMatrix uint64
-	ImageDigest Digest
+	Image  image.Image
+	Format string
+	Digest Digest
 }
 
 //ComputeRadonDigest puts the result of Radon in a digest
@@ -30,7 +28,7 @@ func (d *ImageDigest) ComputeRadonDigest() error {
 		panic(err)
 	}
 
-	d.ImageDigest = DigestMatrix(imgMtx)
+	d.Digest = DigestMatrix(imgMtx)
 
 	return nil
 }

@@ -23,6 +23,12 @@ import (
 	"sort"
 )
 
+type ImageDigest struct {
+	Radon       radon.ImageDigest
+	Phash       uint64
+	PhashMatrix uint64
+}
+
 func median(a []float64) float64 {
 	b := make([]float64, len(a))
 	copy(b, a)
