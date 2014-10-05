@@ -2,11 +2,9 @@ package phash_test
 
 import (
 	"io/ioutil"
-	"strconv"
 	"testing"
 	// "time"
 	"fmt"
-	"github.com/azr/phash/manipulator"
 	// "github.com/azr/phash/radon"
 	"github.com/azr/phash"
 	cphash "github.com/kavu/go-phash"
@@ -22,7 +20,6 @@ import (
 	_ "code.google.com/p/go.image/bmp"
 	_ "code.google.com/p/go.image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
-	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -207,14 +204,4 @@ func (img *ImageBag) CompareWithImages(images []ImageBag) {
 	}
 
 	return
-}
-
-func TestColor(t *testing.T) {
-	c := color.RGBA{251, 252, 253, 254}
-	hex := manipulator.ColorToHexString(c)
-	n, _ := strconv.ParseInt(hex, 0, 64)
-
-	if n != int64(manipulator.ColorToFloat64(c)) {
-		t.Fatal("Color convertion not equal ?")
-	}
 }

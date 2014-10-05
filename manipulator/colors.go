@@ -11,6 +11,11 @@ func ColorToFloat64(c color.Color) float64 {
 	return float64((r>>8)<<16) + float64((g>>8)<<8) + float64(b>>8)
 }
 
+func Float64ToColor(src float64) color.Color {
+	c := int64(src)
+	return color.RGBA{uint8(c >> 16), uint8(c >> 8), uint8(c), 0xff}
+}
+
 //ColorToHexString converts an RGB triple to an Hex string.
 func ColorToHexString(c color.Color) string {
 	r, g, b, _ := c.RGBA()
