@@ -7,6 +7,7 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
+	_ "code.google.com/p/go.image/bmp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -16,9 +17,11 @@ import (
 //ImageDigest will contain digested dct/radon/other digest
 //of an image
 type ImageDigest struct {
-	Image  image.Image
-	Format string
-	Digest Digest
+	Image          image.Image
+	Format         string
+	Digest         Digest
+	Projections    Projections
+	FeaturesVector FeaturesVector
 }
 
 //ComputeRadonDigest puts the result of Radon in a digest
@@ -28,7 +31,7 @@ func (d *ImageDigest) ComputeRadonDigest() error {
 		panic(err)
 	}
 
-	d.Digest = DigestMatrix(imgMtx)
+	d.Digest, d.Projections, d.FeaturesVector = DigestMatrix(imgMtx)
 
 	return nil
 }

@@ -2,6 +2,8 @@ package radon
 
 import (
 	"code.google.com/p/biogo.matrix"
+	"github.com/azr/phash/manipulator"
+	"image"
 	"math"
 )
 
@@ -216,7 +218,7 @@ func CrossCorr(x, y Digest, threshold float64) (bool, float64) {
 }
 
 //DigestMatrix computes radon digest of img matrix
-func DigestMatrix(img *matrix.Dense) Digest {
+func DigestMatrix(img *matrix.Dense) (Digest, Projections, FeaturesVector) {
 	radonProjection, err := Project(img, 0)
 	if err != nil {
 		panic(err)
@@ -224,5 +226,9 @@ func DigestMatrix(img *matrix.Dense) Digest {
 
 	fv := FeatureVector(radonProjection)
 	dctDigest := Dct(fv)
-	return dctDigest
+	return dctDigest, radonProjection, fv
+}
+
+func (p *Projections) ToImage() image.Image {
+	return manipulator.MatrixToImage(p.R)
 }
