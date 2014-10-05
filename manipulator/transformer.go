@@ -42,6 +42,17 @@ func ImageToMatrix(src image.Image) (*matrix.Dense, error) {
 	return matrix.NewDense(mtx)
 }
 
+func MatrixToImage(src matrix.Matrix) image.Image {
+	width, height := src.Dims()
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			img.Set(x, y, Float64ToColor(src.At(x, y)))
+		}
+	}
+	return img
+}
+
 //CopyImage copies images into a draw.Image
 func CopyImage(src image.Image) draw.Image {
 	b := src.Bounds()
