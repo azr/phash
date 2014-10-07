@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"math"
 )
 
 func CropMatrix(src matrix.Matrix, x0, y0, x1, y1 int) (*matrix.Dense, error) {
@@ -75,4 +76,14 @@ func CopyImage(src image.Image) draw.Image {
 	draw.Draw(copy, copy.Bounds(), src, b.Min, draw.Src)
 
 	return copy
+}
+
+const x = math.Pi / 180
+
+func Rad(d float64) float64 {
+	return d * x
+}
+
+func Deg(r float64) float64 {
+	return r / x
 }

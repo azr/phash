@@ -2,8 +2,10 @@ package radon
 
 import (
 	"code.google.com/p/biogo.matrix"
+	"code.google.com/p/graphics-go/graphics"
 	"github.com/azr/phash/manipulator"
 	"image"
+	"image/color"
 	"math"
 )
 
@@ -38,7 +40,7 @@ func Project(img matrix.Matrix, N int) (Projections, error) {
 	width, height := img.Dims()
 
 	if N == 0 {
-		N = height
+		N = 180
 	}
 	D := max(width, height)
 	var xCenter, yCenter float64 = float64(width) / 2.0, float64(height) / 2.0
@@ -95,6 +97,47 @@ func Project(img matrix.Matrix, N int) (Projections, error) {
 	}
 
 	return projs, nil
+}
+
+//ProjectGray returns a greyscale sinogram (or radon projection) of img
+// N(default: 180): number of image rotation on which a projection will be done
+func ProjectGray(img image.Image, N int) (*image.Gray, error) {
+	if N == 0 {
+		N = 180
+	}
+	step := 180.0 / float64(N)
+
+	size := img.Bounds().Size()
+	D := max(size.X, size.Y)
+	out := image.NewGray(image.Rect(0, 0, D, N))
+
+	// for each given angle θ
+	for y := 0; y < N; y++ {
+		θ := float64(y) * step
+		draw := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dy(), img.Bounds().Dx()))
+		//have a duplicate img rotated by θ
+		err := graphics.Rotate(draw, img, &graphics.RotateOptions{Angle: manipulator.Rad(θ)})
+		if err != nil {
+			return out, err
+		}
+
+		// compute projection of image
+		sinogram := make([]float64, draw.Bounds().Size().X)
+		// get column average profile
+		for y := 0; y < draw.Bounds().Size().Y; y++ {
+			for x := 0; x < draw.Bounds().Size().X; x++ {
+				greyColor, _ := color.GrayModel.Convert(draw.At(x, y)).(color.Gray)
+				sinogram[x] = sinogram[x] + float64(greyColor.Y)
+			}
+		}
+
+		//Set out line with sinogram
+		for x := 0; x < out.Bounds().Size().X; x++ {
+			out.Set(x, y, color.Gray{uint8(sinogram[x] / float64(draw.Bounds().Size().X))})
+		}
+	}
+
+	return out, nil
 }
 
 //FeatureVector computes the feature vector from a radon projection map.
