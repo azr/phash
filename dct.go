@@ -151,7 +151,7 @@ func GreyscaleDctMatrix(img image.Gray) uint64 {
 //ComputeGreyscaleDct puts the result of GreyscaleDct in a digest
 func (d *ImageDigest) ComputeGreyscaleDct() error {
 	stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
-	greyscaleStamp := Gscl(stamp)
+	greyscaleStamp := manipulator.ImageToGrayscale(stamp)
 
 	// greyscaleStamp := greyscale.Greyscale(stamp)
 	d.Phash = GreyscaleDct(greyscaleStamp)
@@ -162,7 +162,7 @@ func (d *ImageDigest) ComputeGreyscaleDct() error {
 //ComputeGreyscaleDctMatrix puts the result of GreyscaleDctMatrix in a digest
 func (d *ImageDigest) ComputeGreyscaleDctMatrix() error {
 	stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
-	greyscaleStamp := Gscl(stamp)
+	greyscaleStamp := manipulator.ImageToGrayscale(stamp)
 
 	// greyscaleStamp := greyscale.Greyscale(stamp)
 	d.PhashMatrix = GreyscaleDctMatrix(greyscaleStamp)

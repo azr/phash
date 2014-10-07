@@ -3,6 +3,7 @@ package manipulator
 import (
 	"code.google.com/p/biogo.matrix"
 	"image"
+	"image/color"
 	"image/draw"
 )
 
@@ -40,6 +41,19 @@ func ImageToMatrix(src image.Image) (*matrix.Dense, error) {
 		}
 	}
 	return matrix.NewDense(mtx)
+}
+
+//ImageToGrayscale returns the greyscale of an image
+func ImageToGrayscale(src image.Image) image.Gray {
+	// Create a new grayscale image
+	bounds := src.Bounds()
+	gray := image.NewGray(bounds)
+	for x := 0; x < bounds.Max.X; x++ {
+		for y := 0; y < bounds.Max.Y; y++ {
+			gray.Set(x, y, color.GrayModel.Convert(src.At(x, y)))
+		}
+	}
+	return *gray
 }
 
 func MatrixToImage(src matrix.Matrix) image.Image {

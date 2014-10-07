@@ -1,9 +1,6 @@
 package phash
 
-import (
-	"image"
-	"image/color"
-)
+import ()
 
 // HammingDistance computes hamming distance between two dtc hashes
 func HammingDistance(hash1, hash2 uint64) uint64 {
@@ -13,18 +10,4 @@ func HammingDistance(hash1, hash2 uint64) uint64 {
 	x = (x & m2) + ((x >> 2) & m2)
 	x = (x + (x >> 4)) & m4
 	return (x * h01) >> 56
-}
-
-//Gscl returns the greyscale of an image
-func Gscl(src image.Image) image.Gray {
-	// Create a new grayscale image
-	bounds := src.Bounds()
-	gray := image.NewGray(bounds)
-	for x := 0; x < bounds.Max.X; x++ {
-		for y := 0; y < bounds.Max.Y; y++ {
-			oldColor := src.At(x, y)
-			gray.Set(x, y, color.GrayModel.Convert(oldColor))
-		}
-	}
-	return *gray
 }
