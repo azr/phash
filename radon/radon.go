@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/biogo.matrix"
 	"code.google.com/p/graphics-go/graphics"
 	"github.com/azr/phash/manipulator"
+	"github.com/nfnt/resize"
 	"image"
 	"image/color"
 	"math"
@@ -134,6 +135,45 @@ func ProjectGray(img image.Image, N int) (*image.Gray, error) {
 		//Set out line with sinogram
 		for x := 0; x < out.Bounds().Size().X; x++ {
 			out.Set(x, y, color.Gray{uint8(sinogram[x] / float64(draw.Bounds().Size().X))})
+		}
+	}
+
+	return out, nil
+}
+
+//BackProjectGray computes back projection of img
+// in Gray16 by performing an addition
+// of backprojection by line.
+// 16Gray avoids white noise.
+func BackProjectGray(img image.Gray) (*image.Gray16, error) {
+	size := img.Bounds().Size()
+	width := size.X
+	nbProj := size.Y
+	step := 180.0 / float64(nbProj)
+
+	out := image.NewGray16(image.Rect(0, 0, width, width))
+
+	for y := 0; y < nbProj; y++ {
+		//Extract a 1D-projection (one row Y of sinogram)
+		//                             nw[x,y], se[x,y]
+		line := img.SubImage(image.Rect(0, y, width, y+1)).(*image.Gray)
+
+		// 3- Do the backprojection and rotate accordingly
+		wideLine := resize.Resize(uint(width), uint(width), line, resize.Lanczos3).(*image.Gray)
+
+		θ := manipulator.Rad(float64(-y) * step)
+		rotatedWideLine := image.NewGray(image.Rect(0, 0, width, width))
+		err := graphics.Rotate(rotatedWideLine, wideLine, &graphics.RotateOptions{Angle: θ})
+		if err != nil {
+			return out, err
+		}
+
+		// 4- Add the rotated backprojection in the output image
+		for x := 0; x < width; x++ {
+			for y := 0; y < width; y++ {
+				point := uint16(out.At(x, y).(color.Gray16).Y) + uint16(rotatedWideLine.At(x, y).(color.Gray).Y)
+				out.Set(x, y, color.Gray16{uint16(point)})
+			}
 		}
 	}
 
