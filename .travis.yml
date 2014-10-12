@@ -1,9 +1,16 @@
 language: go
 go:
- - 1.2
- - release
- - tip
-
+  - 1.2
+  - release
+  - tip
 before_install:
   - sudo apt-get update
   - sudo apt-get install libphash0 libphash-dev imagemagick libatlas-base-dev
+  - go get code.google.com/p/go.tools/cmd/cover
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/mattn/goveralls
+script:
+  - $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
+env:
+  global:
+    secure: oinDOcxfLucbpewKIEvjv53LmC0NOVMGwVHSlAxo2HjmQyHELawZUrR40fUMg3Dm3XvCuV+GjlkLLzukeqctdhzoUUuWjvStlV7OrpqB4Ir61Dqa/rcpagYD7IleyeXvXAXxsjUONlcd363z3E82WirFkbAs3dV451OQjghGGes=
