@@ -3,6 +3,7 @@ package radon
 import (
 	"code.google.com/p/biogo.matrix"
 	"code.google.com/p/graphics-go/graphics"
+	"errors"
 	"github.com/azr/phash/manipulator"
 	"github.com/nfnt/resize"
 	"image"
@@ -260,17 +261,17 @@ func Dct(fv FeaturesVector) Digest {
 }
 
 // CrossCorr Computes the cross correlation of two series vectors
-// param x - Digest struct
-// param y - Digest struct
+// param xCoeffs []uint8
+// param xCoeffs []uint8
 // param threshold - threshold value for which 2 images are considered the same or different.
 //
 // returns (true for similar, false for different), (the peak of cross correlation)
-func CrossCorr(x, y Digest, threshold float64) (bool, float64) {
+func CrossCorr(xCoeffs, yCoeffs []uint8) ([]float64, error) {
 
-	N := len(y.Coeffs)
-
-	xCoeffs := x.Coeffs
-	yCoeffs := y.Coeffs
+	if len(yCoeffs) != len(xCoeffs) {
+		return nil, errors.New("signals have different len")
+	}
+	N := len(yCoeffs)
 
 	r := make([]float64, N)
 	sumx := 0.0
@@ -281,7 +282,6 @@ func CrossCorr(x, y Digest, threshold float64) (bool, float64) {
 	}
 	meanx := sumx / float64(N)
 	meany := sumy / float64(N)
-	max := 0.0
 	for d := 0; d < N; d++ {
 		num := 0.0
 		denx := 0.0
@@ -292,11 +292,27 @@ func CrossCorr(x, y Digest, threshold float64) (bool, float64) {
 			deny += math.Pow((float64(yCoeffs[(N+i-d)%N]) - meany), 2)
 		}
 		r[d] = num / math.Sqrt(denx*deny)
-		if r[d] > float64(max) {
-			max = r[d]
-		}
 	}
 
+	return r, nil
+}
+
+// DiffByCrossCorr Computes the cross correlation of two series vectors
+// and tells if signals are similar
+// param xCoeffs []uint8
+// param xCoeffs []uint8
+// param threshold - threshold value for which 2 signals are considered the same or different.
+//
+// returns (true for similar, false for different), (the peak of cross correlation)
+func DiffByCrossCorr(xCoeffs, yCoeffs []uint8, threshold float64) (bool, float64) {
+	r, err := CrossCorr(xCoeffs, yCoeffs)
+	max := 0.0
+	if err != nil {
+		return false, max
+	}
+	for d := 0; d < len(r); d++ {
+		max = math.Max(max, r[d])
+	}
 	return max > threshold, max
 }
 
