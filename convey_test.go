@@ -144,7 +144,7 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 			Convey("Then the Cross Correlation for threshold should be true", func() {
-				crossCoorrelation, _ := radon.CrossCorr(catBig.ImageDigest.Radon.Digest, catMedium.ImageDigest.Radon.Digest, 0.01)
+				crossCoorrelation, _ := radon.DiffByCrossCorr(catBig.ImageDigest.Radon.Digest.Coeffs, catMedium.ImageDigest.Radon.Digest.Coeffs, 0.01)
 				So(crossCoorrelation, ShouldBeTrue)
 			})
 
@@ -221,9 +221,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 
 			SkipConvey("Then the Cross Correlation for threshold should be true", func() {
 
-				crossCoorrelation, _ := radon.CrossCorr(sunBig.ImageDigest.Radon.Digest, sunSmall.ImageDigest.Radon.Digest, -0.1)
+				crossCoorrelation, _ := radon.DiffByCrossCorr(sunBig.ImageDigest.Radon.Digest.Coeffs, sunSmall.ImageDigest.Radon.Digest.Coeffs, -0.1)
 				So(crossCoorrelation, ShouldBeTrue)
-				crossCoorrelation, _ = radon.CrossCorr(sunBig.ImageDigest.Radon.Digest, sunSmall.ImageDigest.Radon.Digest, 0.0)
+				crossCoorrelation, _ = radon.DiffByCrossCorr(sunBig.ImageDigest.Radon.Digest.Coeffs, sunSmall.ImageDigest.Radon.Digest.Coeffs, 0.0)
 				So(crossCoorrelation, ShouldBeTrue)
 			})
 
@@ -385,21 +385,21 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
 			Convey("Then cats do not look like girls", func() {
 				PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-					crossCoorrelation, _ := radon.CrossCorr(cat.ImageDigest.Radon.Digest, girl.ImageDigest.Radon.Digest, 0.8)
+					crossCoorrelation, _ := radon.DiffByCrossCorr(cat.ImageDigest.Radon.Digest.Coeffs, girl.ImageDigest.Radon.Digest.Coeffs, 0.8)
 					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
 
 			Convey("And suns do not look like cats", func() {
 				PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-					crossCoorrelation, _ := radon.CrossCorr(sun.ImageDigest.Radon.Digest, cat.ImageDigest.Radon.Digest, 0.8)
+					crossCoorrelation, _ := radon.DiffByCrossCorr(sun.ImageDigest.Radon.Digest.Coeffs, cat.ImageDigest.Radon.Digest.Coeffs, 0.8)
 					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
 
 			Convey("And girls do not look like suns", func() {
 				PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-					crossCoorrelation, _ := radon.CrossCorr(girl.ImageDigest.Radon.Digest, sun.ImageDigest.Radon.Digest, 0.8)
+					crossCoorrelation, _ := radon.DiffByCrossCorr(girl.ImageDigest.Radon.Digest.Coeffs, sun.ImageDigest.Radon.Digest.Coeffs, 0.8)
 					So(crossCoorrelation, ShouldBeFalse)
 				})
 			})
