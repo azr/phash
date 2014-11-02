@@ -260,13 +260,13 @@ func Dct(fv FeaturesVector) Digest {
 	return Digest
 }
 
-// CrossCorr Computes the cross correlation of two series vectors
+// CrossCorrelate Computes the cross correlation of two series vectors
 // param xCoeffs []uint8
 // param xCoeffs []uint8
 // param threshold - threshold value for which 2 images are considered the same or different.
 //
 // returns (true for similar, false for different), (the peak of cross correlation)
-func CrossCorr(xCoeffs, yCoeffs []uint8) ([]float64, error) {
+func CrossCorrelate(xCoeffs, yCoeffs []uint8) ([]float64, error) {
 
 	if len(yCoeffs) != len(xCoeffs) {
 		return nil, errors.New("signals have different len")
@@ -305,7 +305,7 @@ func CrossCorr(xCoeffs, yCoeffs []uint8) ([]float64, error) {
 //
 // returns (true for similar, false for different), (the peak of cross correlation)
 func DiffByCrossCorr(xCoeffs, yCoeffs []uint8, threshold float64) (bool, float64) {
-	r, err := CrossCorr(xCoeffs, yCoeffs)
+	r, err := CrossCorrelate(xCoeffs, yCoeffs)
 	max := 0.0
 	if err != nil {
 		return false, max
