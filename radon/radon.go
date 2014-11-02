@@ -260,6 +260,25 @@ func Dct(fv FeaturesVector) Digest {
 	return Digest
 }
 
+//AutoCorrelateProjetions calculates a cross-correlation of each radial projection with itself
+func AutoCorrelateProjetions(projections image.Gray) (out [][]float64, err error) {
+	size := projections.Bounds().Size()
+	width := size.X
+	nbProj := size.Y
+
+	out = make([][]float64, nbProj)
+	// for each projection
+	for θ := 0; θ < nbProj; θ++ {
+		projection := projections.Pix[projections.PixOffset(0, θ):projections.PixOffset(width, θ)]
+		out[θ], err = CrossCorrelate(projection, projection)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 // CrossCorrelate Computes the cross correlation of two series vectors
 // param xCoeffs []uint8
 // param xCoeffs []uint8
