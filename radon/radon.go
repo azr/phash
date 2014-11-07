@@ -314,6 +314,70 @@ func CrossCorrelate(xCoeffs, yCoeffs []uint8) ([]float64, error) {
 	return r, nil
 }
 
+// Calculate the mean of a serie x[]
+func mean(x []uint8) float64 {
+	N := len(x)
+	m := 0.0
+	for i := 0; i < N; i++ {
+		m += float64(x[i])
+	}
+	return m / float64(N)
+}
+
+// Calculate the denominator
+func denom(x, y []uint8, mx, my float64) float64 {
+	N := len(x)
+	sx := 0.0
+	sy := 0.0
+	for i := 0; i < N; i++ {
+		sx += (float64(x[i]) - mx) * (float64(x[i]) - mx)
+		sy += (float64(y[i]) - my) * (float64(y[i]) - my)
+	}
+	return math.Sqrt(sx * sy)
+}
+
+// AutoCorrelate Computes the cross correlation of a signal
+// with itself at lag, circularly.
+//
+// param Coeffs []uint8
+// param lag int
+//
+// returns r(the cross correlation)
+func AutoCorrelate(Coeffs []uint8, lag int) float64 {
+	N := len(Coeffs)
+	mx := mean(Coeffs)
+	up, pow := 0.0, 0.0
+
+	for n := 0; n < N; n++ {
+		h := (n + lag) % N
+		x, y := float64(Coeffs[n])-mx, float64(Coeffs[h])-mx
+		up += (x * y)
+		pow += math.Pow(x, 2)
+	}
+
+	return up / pow
+}
+
+// AutoCorrelateSeries Computes AutoCorrelation with lags
+// from 0 to len(Coeffs)
+// Giving back a correlogram, or an autocorrelation series
+//
+// param Coeffs []uint8
+// param lag int
+//
+// returns r(the cross correlation)
+func AutoCorrelateSeries(Coeffs []uint8, lag int) []float64 {
+	N := len(Coeffs)
+
+	correlogram := make([]float64, N)
+
+	for n := 0; n < N; n++ {
+		correlogram[n] = AutoCorrelate(Coeffs, n)
+	}
+
+	return correlogram
+}
+
 // DiffByCrossCorr Computes the cross correlation of two series vectors
 // and tells if signals are similar
 // param xCoeffs []uint8
