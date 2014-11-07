@@ -123,7 +123,6 @@ func ProjectGray(img image.Image, N int) (*image.Gray, error) {
 			return out, err
 		}
 
-		// compute projection of image
 		sinogram := make([]float64, draw.Bounds().Size().X)
 		// get column average profile
 		for y := 0; y < draw.Bounds().Size().Y; y++ {
@@ -282,9 +281,8 @@ func AutoCorrelateProjetions(projections image.Gray) (out [][]float64, err error
 // CrossCorrelate Computes the cross correlation of two series vectors
 // param xCoeffs []uint8
 // param xCoeffs []uint8
-// param threshold - threshold value for which 2 images are considered the same or different.
 //
-// returns (true for similar, false for different), (the peak of cross correlation)
+// returns r(the cross correlation array), error(if failed)
 func CrossCorrelate(xCoeffs, yCoeffs []uint8) ([]float64, error) {
 
 	if len(yCoeffs) != len(xCoeffs) {
