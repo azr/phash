@@ -259,59 +259,70 @@ func Dct(fv FeaturesVector) Digest {
 	return Digest
 }
 
-//AutoCorrelateProjetions calculates a cross-correlation of each radial projection with itself
-func AutoCorrelateProjetions(projections image.Gray) (out [][]float64, err error) {
+//AutoCorrelateProjections calculates a cross-correlation of each radial
+//projection with itself
+func AutoCorrelateProjections(projections image.Gray) ([][]float64, error) {
 	size := projections.Bounds().Size()
 	width := size.X
 	nbProj := size.Y
 
-	out = make([][]float64, nbProj)
+	out := make([][]float64, nbProj)
 	// for each projection
 	for θ := 0; θ < nbProj; θ++ {
 		projection := projections.Pix[projections.PixOffset(0, θ):projections.PixOffset(width, θ)]
-		out[θ], err = CrossCorrelate(projection, projection)
-		if err != nil {
-			return
-		}
+		out[θ] = AutoCorrelateSeries(projection)
 	}
 
-	return
+	return out, nil
 }
 
-// CrossCorrelate Computes the cross correlation of two series vectors
+// CrossCorrelate Computes the correlation of two signals at delay lag
+//
 // param xCoeffs []uint8
 // param xCoeffs []uint8
+// param lag     int
 //
 // returns r(the cross correlation array), error(if failed)
-func CrossCorrelate(xCoeffs, yCoeffs []uint8) ([]float64, error) {
+func CrossCorrelate(xCoeffs, yCoeffs []uint8, lag int) (float64, error) {
 
 	if len(yCoeffs) != len(xCoeffs) {
-		return nil, errors.New("signals have different len")
+		return 0.0, errors.New("signals have different len")
 	}
 	N := len(yCoeffs)
 
-	r := make([]float64, N)
-	sumx := 0.0
-	sumy := 0.0
+	mx, my := mean(xCoeffs), mean(yCoeffs)
+
+	sxy := 0.0
 	for i := 0; i < N; i++ {
-		sumx += float64(xCoeffs[i])
-		sumy += float64(yCoeffs[i])
-	}
-	meanx := sumx / float64(N)
-	meany := sumy / float64(N)
-	for d := 0; d < N; d++ {
-		num := 0.0
-		denx := 0.0
-		deny := 0.0
-		for i := 0; i < N; i++ {
-			num += (float64(xCoeffs[i]) - meanx) * (float64(yCoeffs[(N+i-d)%N]) - meany)
-			denx += math.Pow((float64(xCoeffs[i]) - meanx), 2)
-			deny += math.Pow((float64(yCoeffs[(N+i-d)%N]) - meany), 2)
-		}
-		r[d] = num / math.Sqrt(denx*deny)
+		j := (i + lag) % N
+		sxy += (float64(xCoeffs[i]) - mx) * (float64(yCoeffs[j]) - my)
 	}
 
-	return r, nil
+	return sxy / denom(xCoeffs, yCoeffs, mx, my), nil
+}
+
+// CrossCorrelateSeries Computes CrossCorrelation with lags
+// from 0 to len(Coeffs) of two vectors
+// Giving back a correlogram, or an autocorrelation series
+//
+// param Coeffs []uint8
+// param lag int
+//
+// returns r(the cross correlation)
+func CrossCorrelateSeries(x, y []uint8) ([]float64, error) {
+	if len(y) != len(x) {
+		return nil, errors.New("signals have different len")
+	}
+
+	N := len(x)
+
+	correlogram := make([]float64, N)
+
+	for n := 0; n < N; n++ {
+		correlogram[n], _ = CrossCorrelate(x, y, n)
+	}
+
+	return correlogram, nil
 }
 
 // Calculate the mean of a serie x[]
@@ -330,8 +341,8 @@ func denom(x, y []uint8, mx, my float64) float64 {
 	sx := 0.0
 	sy := 0.0
 	for i := 0; i < N; i++ {
-		sx += (float64(x[i]) - mx) * (float64(x[i]) - mx)
-		sy += (float64(y[i]) - my) * (float64(y[i]) - my)
+		sx += math.Pow(float64(x[i])-mx, 2)
+		sy += math.Pow(float64(y[i])-my, 2)
 	}
 	return math.Sqrt(sx * sy)
 }
@@ -366,7 +377,7 @@ func AutoCorrelate(Coeffs []uint8, lag int) float64 {
 // param lag int
 //
 // returns r(the cross correlation)
-func AutoCorrelateSeries(Coeffs []uint8, lag int) []float64 {
+func AutoCorrelateSeries(Coeffs []uint8) []float64 {
 	N := len(Coeffs)
 
 	correlogram := make([]float64, N)
@@ -386,7 +397,7 @@ func AutoCorrelateSeries(Coeffs []uint8, lag int) []float64 {
 //
 // returns (true for similar, false for different), (the peak of cross correlation)
 func DiffByCrossCorr(xCoeffs, yCoeffs []uint8, threshold float64) (bool, float64) {
-	r, err := CrossCorrelate(xCoeffs, yCoeffs)
+	r, err := CrossCorrelateSeries(xCoeffs, yCoeffs)
 	max := 0.0
 	if err != nil {
 		return false, max
@@ -409,6 +420,8 @@ func DigestMatrix(img *matrix.Dense) (Digest, Projections, FeaturesVector) {
 	return dctDigest, radonProjection, fv
 }
 
+//ToImage transforms back a set of projections
+//in an image
 func (p *Projections) ToImage() image.Image {
 	return manipulator.MatrixToImage(p.R)
 }
