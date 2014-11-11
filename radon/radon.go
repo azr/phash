@@ -191,7 +191,7 @@ func FeatureVector(projs Projections) FeaturesVector {
 	fv.features = make([]float64, N)
 
 	featV := fv.features
-	sum := 0.0
+	Σ := 0.0
 	sumSqd := 0.0
 	for k := 0; k < N; k++ {
 		lineSum := 0.0
@@ -202,11 +202,11 @@ func FeatureVector(projs Projections) FeaturesVector {
 			lineSumSqd += projectionMap.At(k, i) * projectionMap.At(k, i)
 		}
 		featV[k] = (lineSumSqd / float64(nbPixels)) - (lineSum*lineSum)/float64(nbPixels*nbPixels)
-		sum += featV[k]
+		Σ += featV[k]
 		sumSqd += featV[k] * featV[k]
 	}
-	mean := sum / float64(N)
-	variable := math.Sqrt((sumSqd / float64(N)) - (sum*sum)/float64(N*N))
+	mean := Σ / float64(N)
+	variable := math.Sqrt((sumSqd / float64(N)) - (Σ*Σ)/float64(N*N))
 
 	for i := 0; i < N; i++ {
 		featV[i] = (featV[i] - mean) / variable
@@ -233,15 +233,15 @@ func Dct(fv FeaturesVector) Digest {
 	min := 0.0
 
 	for k := 0; k < nbCoeffs; k++ {
-		sum := 0.0
+		Σ := 0.0
 		for n := 0; n < N; n++ {
 			temp := R[n] * math.Cos((math.Pi*float64((2*n+1)*k))/float64(2*N))
-			sum += temp
+			Σ += temp
 		}
 		if k == 0 {
-			DTemp[k] = sum / math.Sqrt(float64(N))
+			DTemp[k] = Σ / math.Sqrt(float64(N))
 		} else {
-			DTemp[k] = sum * math.Sqrt(2) / math.Sqrt(float64(N))
+			DTemp[k] = Σ * math.Sqrt(2) / math.Sqrt(float64(N))
 		}
 		if DTemp[k] > max {
 			max = DTemp[k]
@@ -292,13 +292,13 @@ func CrossCorrelate(xCoeffs, yCoeffs []uint8, lag int) (float64, error) {
 
 	mx, my := mean(xCoeffs), mean(yCoeffs)
 
-	sxy := 0.0
+	Σxy := 0.0
 	for i := 0; i < N; i++ {
 		j := (i + lag) % N
-		sxy += (float64(xCoeffs[i]) - mx) * (float64(yCoeffs[j]) - my)
+		Σxy += (float64(xCoeffs[i]) - mx) * (float64(yCoeffs[j]) - my)
 	}
 
-	return sxy / denom(xCoeffs, yCoeffs, mx, my), nil
+	return Σxy / denom(xCoeffs, yCoeffs, mx, my), nil
 }
 
 // CrossCorrelateSeries Computes CrossCorrelation with lags
@@ -328,23 +328,23 @@ func CrossCorrelateSeries(x, y []uint8) ([]float64, error) {
 // Calculate the mean of a serie x[]
 func mean(x []uint8) float64 {
 	N := len(x)
-	m := 0.0
+	Σ := 0.0
 	for i := 0; i < N; i++ {
-		m += float64(x[i])
+		Σ += float64(x[i])
 	}
-	return m / float64(N)
+	return Σ / float64(N)
 }
 
 // Calculate the denominator
 func denom(x, y []uint8, mx, my float64) float64 {
 	N := len(x)
-	sx := 0.0
-	sy := 0.0
+	Σx := 0.0
+	Σy := 0.0
 	for i := 0; i < N; i++ {
-		sx += math.Pow(float64(x[i])-mx, 2)
-		sy += math.Pow(float64(y[i])-my, 2)
+		Σx += math.Pow(float64(x[i])-mx, 2)
+		Σy += math.Pow(float64(y[i])-my, 2)
 	}
-	return math.Sqrt(sx * sy)
+	return math.Sqrt(Σx * Σy)
 }
 
 // AutoCorrelate Computes the cross correlation of a signal
@@ -357,16 +357,16 @@ func denom(x, y []uint8, mx, my float64) float64 {
 func AutoCorrelate(Coeffs []uint8, lag int) float64 {
 	N := len(Coeffs)
 	mx := mean(Coeffs)
-	up, pow := 0.0, 0.0
+	Σup, Σpow := 0.0, 0.0
 
 	for n := 0; n < N; n++ {
 		h := (n + lag) % N
 		x, y := float64(Coeffs[n])-mx, float64(Coeffs[h])-mx
-		up += (x * y)
-		pow += math.Pow(x, 2)
+		Σup += (x * y)
+		Σpow += math.Pow(x, 2)
 	}
 
-	return up / pow
+	return Σup / Σpow
 }
 
 // AutoCorrelateSeries Computes AutoCorrelation with lags
