@@ -7,7 +7,7 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	_ "code.google.com/p/go.image/bmp"
+	_ "golang.org/x/image/bmp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"

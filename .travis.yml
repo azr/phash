@@ -1,12 +1,13 @@
 language: go
 go:
   - 1.2
+  - 1.3
   - release
-  - tip
 before_install:
   - sudo apt-get update
   - sudo apt-get install libphash0 libphash-dev imagemagick libatlas-base-dev
   - go get code.google.com/p/go.tools/cmd/cover
+  - go get golang.org/x/tools/cmd/cover
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
 script:

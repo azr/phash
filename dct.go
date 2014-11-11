@@ -8,8 +8,8 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	_ "code.google.com/p/go.image/bmp"
-	_ "code.google.com/p/go.image/tiff"
+	_ "golang.org/x/image/bmp"
+	_ "golang.org/x/image/tiff"
 	_ "code.google.com/p/graphics-go/graphics"
 	"github.com/azr/phash/manipulator"
 	"github.com/azr/phash/radon"
