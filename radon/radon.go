@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/biogo.matrix"
 	"code.google.com/p/graphics-go/graphics"
 	"errors"
+	"github.com/azr/phash/floats"
 	"github.com/azr/phash/manipulator"
 	"github.com/nfnt/resize"
 	"image"
@@ -425,4 +426,16 @@ func DigestMatrix(img *matrix.Dense) (Digest, Projections, FeaturesVector) {
 //in an image
 func (p *Projections) ToImage() image.Image {
 	return manipulator.MatrixToImage(p.R)
+}
+
+//LogMap computes log mapping of signal
+// Todo: http://goo.gl/oEiLUh
+func LogMap(in []float64) []float64 {
+	Σ := floats.Sum(in)
+	out := make([]float64, len(in))
+
+	for x := 0; x < len(in); x++ {
+		out[x] = math.Log(Σ * math.Exp(in[x]))
+	}
+	return out
 }
