@@ -261,19 +261,20 @@ func Dct(fv FeaturesVector) Digest {
 
 //AutoCorrelateProjections calculates a cross-correlation of each radial
 //projection with itself
-func AutoCorrelateProjections(projections image.Gray) ([][]float64, error) {
+func AutoCorrelateProjections(projections image.Gray) []float64 {
 	size := projections.Bounds().Size()
 	width := size.X
 	nbProj := size.Y
 
-	out := make([][]float64, nbProj)
+	out := make([]float64, nbProj*width)
+
 	// for each projection
 	for θ := 0; θ < nbProj; θ++ {
 		projection := projections.Pix[projections.PixOffset(0, θ):projections.PixOffset(width, θ)]
-		out[θ] = AutoCorrelateSeries(projection)
+		out = append(out, AutoCorrelateSeries(projection)...)
 	}
 
-	return out, nil
+	return out
 }
 
 // CrossCorrelate Computes the correlation of two signals at delay lag
