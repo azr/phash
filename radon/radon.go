@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/azr/phash/floats"
 	"github.com/azr/phash/manipulator"
+	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
 	"image"
 	"image/color"
@@ -108,13 +109,24 @@ func Project(img image.Image, N int) (*image.Gray, []uint8, error) {
 
 //ProjectGray returns a greyscale sinogram (or radon projection) of img
 // N(default: 180): number of image rotation on which a projection will be done
-func ProjectGray(img image.Image, N int) (*image.Gray, error) {
+// The naive simplistic approach
+// Sinograms looks like this
+// θ1 θ2 θ3...θN
+// |  |  |    |
+// |  |  |    |
+func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 	if N == 0 {
 		N = 180
 	}
 	step := 180.0 / float64(N)
 
-	size := img.Bounds().Size()
+	size := src.Bounds().Size()
+	overX := int(float64(size.X) * 1.1)
+	overY := int(float64(size.Y) * 1.1)
+	var img image.Image = image.NewGray(image.Rect(0, 0, size.X+overX, size.Y+overY))
+	img = imaging.Overlay(img, src, image.Pt(overX/2, overY/2), 1)
+	size = img.Bounds().Size()
+
 	D := max(size.X, size.Y)
 	out := image.NewGray(image.Rect(0, 0, D, N))
 
@@ -128,18 +140,18 @@ func ProjectGray(img image.Image, N int) (*image.Gray, error) {
 			return out, err
 		}
 
-		sinogram := make([]float64, draw.Bounds().Size().X)
+		sinogram := make([]float64, size.X)
 		// get column average profile
-		for y := 0; y < draw.Bounds().Size().Y; y++ {
-			for x := 0; x < draw.Bounds().Size().X; x++ {
+		for y := 0; y < size.Y; y++ {
+			for x := 0; x < size.X; x++ {
 				greyColor, _ := color.GrayModel.Convert(draw.At(x, y)).(color.Gray)
 				sinogram[x] = sinogram[x] + float64(greyColor.Y)
 			}
 		}
 
 		//Set out line with sinogram
-		for x := 0; x < out.Bounds().Size().X; x++ {
-			out.Set(x, y, color.Gray{uint8(sinogram[x] / float64(draw.Bounds().Size().X))})
+		for x := 0; x < D; x++ {
+			out.Set(x, y, color.Gray{uint8(sinogram[x] / float64(size.X))})
 		}
 	}
 
