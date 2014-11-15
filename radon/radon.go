@@ -128,11 +128,11 @@ func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 	size = img.Bounds().Size()
 
 	D := max(size.X, size.Y)
-	out := image.NewGray(image.Rect(0, 0, D, N))
+	out := image.NewGray(image.Rect(0, 0, N, D))
 
 	// for each given angle θ
-	for y := 0; y < N; y++ {
-		θ := float64(y) * step
+	for n := 0; n < N; n++ {
+		θ := float64(n) * step
 		draw := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dy(), img.Bounds().Dx()))
 		//have a duplicate img rotated by θ
 		err := graphics.Rotate(draw, img, &graphics.RotateOptions{Angle: manipulator.Rad(θ)})
@@ -150,8 +150,8 @@ func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 		}
 
 		//Set out line with sinogram
-		for x := 0; x < D; x++ {
-			out.Set(x, y, color.Gray{uint8(sinogram[x] / float64(size.X))})
+		for d := 0; d < D; d++ {
+			out.Set(n, d, color.Gray{uint8(sinogram[d] / float64(size.Y))})
 		}
 	}
 
@@ -164,21 +164,20 @@ func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 // 16Gray avoids white noise.
 func BackProjectGray(img image.Gray) (*image.Gray16, error) {
 	size := img.Bounds().Size()
-	width := size.X
-	nbProj := size.Y
+	width := size.Y
+	nbProj := size.X
 	step := 180.0 / float64(nbProj)
 
 	out := image.NewGray16(image.Rect(0, 0, width, width))
 
-	for y := 0; y < nbProj; y++ {
+	for X := 0; X < nbProj; X++ {
 		//Extract a 1D-projection (one row Y of sinogram)
-		//                             nw[x,y], se[x,y]
-		line := img.SubImage(image.Rect(0, y, width, y+1)).(*image.Gray)
+		line := img.SubImage(image.Rect(X, 0, X+1, width)).(*image.Gray)
 
 		// 3- Do the backprojection and rotate accordingly
 		wideLine := resize.Resize(uint(width), uint(width), line, resize.Lanczos3).(*image.Gray)
 
-		θ := manipulator.Rad(float64(-y) * step)
+		θ := manipulator.Rad(float64(X)*step) + math.Pi/2
 		rotatedWideLine := image.NewGray(image.Rect(0, 0, width, width))
 		err := graphics.Rotate(rotatedWideLine, wideLine, &graphics.RotateOptions{Angle: θ})
 		if err != nil {
