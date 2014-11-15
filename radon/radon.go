@@ -107,6 +107,29 @@ func Project(img image.Image, N int) (*image.Gray, []uint8, error) {
 	return radonMap, nbPerLine, nil
 }
 
+func atAngle(img image.Image, θ float64, x, y int, xc, yc float64) color.Color {
+	xθ := floats.Round(math.Cos(θ)*(float64(x)-xc)-math.Sin(θ)*(float64(y)-yc)+xc, 0.5, 0)
+	yθ := floats.Round(math.Cos(θ)*(float64(y)-yc)-math.Sin(θ)*(float64(x)-xc)+yc, 0.5, 0)
+	// log.Println("yah :", xθ, yθ)
+	return img.At(int(xθ+roundingFactor(xθ)), int(yθ+roundingFactor(yθ)))
+}
+
+func getSinogramFor(θ float64, img image.Image) []float64 {
+	sinogram := make([]float64, img.Bounds().Size().X)
+	xc := float64(img.Bounds().Size().X) / 2
+	yc := float64(img.Bounds().Size().Y) / 2
+
+	// get column average profile
+	for y := 0; y < img.Bounds().Size().Y; y++ {
+		for x := 0; x < img.Bounds().Size().X; x++ {
+			clr := atAngle(img, θ, x, y, xc, yc)
+			greyColor, _ := color.GrayModel.Convert(clr).(color.Gray)
+			sinogram[x] = sinogram[x] + float64(greyColor.Y)
+		}
+	}
+	return sinogram
+}
+
 //ProjectGray returns a greyscale sinogram (or radon projection) of img
 // N(default: 360): number of image rotation on which a projection will be done
 // A naive simplistic approach
@@ -133,21 +156,8 @@ func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 	// for each given angle θ
 	for n := 0; n < N; n++ {
 		θ := float64(n) * step
-		draw := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dy(), img.Bounds().Dx()))
-		//have a duplicate img rotated by θ
-		err := graphics.Rotate(draw, img, &graphics.RotateOptions{Angle: manipulator.Rad(θ)})
-		if err != nil {
-			return out, err
-		}
 
-		sinogram := make([]float64, size.X)
-		// get column average profile
-		for y := 0; y < size.Y; y++ {
-			for x := 0; x < size.X; x++ {
-				greyColor, _ := color.GrayModel.Convert(draw.At(x, y)).(color.Gray)
-				sinogram[x] = sinogram[x] + float64(greyColor.Y)
-			}
-		}
+		sinogram := getSinogramFor(θ, img)
 
 		//Set out line with sinogram
 		for d := 0; d < D; d++ {
