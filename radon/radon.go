@@ -1,7 +1,6 @@
 package radon
 
 import (
-	"code.google.com/p/biogo.matrix"
 	"code.google.com/p/graphics-go/graphics"
 	"errors"
 	"github.com/azr/phash/floats"
@@ -18,8 +17,8 @@ const (
 
 //Projections contains radon projections of image of angled lines through center
 type Projections struct {
-	R            matrix.Matrix //projections
-	nbPixPerline []int         //the head of int array denoting the number of pixels of each line
+	R            *image.Gray //projections
+	nbPixPerline []uint8     //the head of int array denoting the number of pixels of each line
 }
 
 //FeaturesVector contains feature vector info
@@ -31,67 +30,72 @@ type Digest struct {
 	Coeffs []uint8 //the head of the Radondigest integer coefficient array
 }
 
+func addPixelsToGray(src image.Image, sx, sy int, dst image.Gray, dx, dy int) {
+	clr := src.At(sx, sy)
+	greyColor, _ := color.GrayModel.Convert(clr).(color.Gray)
+	dst.Set(dx, dy, color.Gray{dst.At(dx, dy).(color.Gray).Y + greyColor.Y})
+}
+
 // Project finds radon projections of N lines running through the image
-// center for lines angled 0to 180 degrees from horizontal.
+// center for lines angled 0 to 180 degrees from horizontal.
+// Totally not working
+//
 //  /param img - img [Matrix](code.google.com/p/biogo.matrix) src image
 //  /param  N  - int number of angled lines to consider.
-//  /return projs - Projections struct
+//  /return sinogram - Projections
+//  /return nbPerLine - number of pixel per line in sinogram
 //  /return error - if failed
-func Project(img matrix.Matrix, N int) (Projections, error) {
-	var projs Projections
-	var err error
-	width, height := img.Dims()
-
+func Project(img image.Image, N int) (*image.Gray, []uint8, error) {
 	if N == 0 {
 		N = 180
 	}
-	D := max(width, height)
-	var xCenter, yCenter float64 = float64(width) / 2.0, float64(height) / 2.0
+	var err error
+	size := img.Bounds().Size()
+
+	D := max(size.X, size.Y)
+	xCenter, yCenter := float64(size.X)/2.0, float64(size.Y)/2.0
 
 	xOff := int(math.Floor(xCenter + roundingFactor(xCenter)))
 	yOff := int(math.Floor(yCenter + roundingFactor(yCenter)))
 
-	radonMap, err := matrix.ZeroDense(N, D)
+	radonMap := image.NewGray(image.Rect(0, 0, N, D))
 	if err != nil {
-		return projs, err
+		return nil, nil, err
 	}
-	projs.R = radonMap
 
-	projs.nbPixPerline = make([]int, N)
-	nbPerLine := projs.nbPixPerline
+	nbPerLine := make([]uint8, N)
 
-	for k := 0; k < N/4+1; k++ {
-		theta := float64(k) * math.Pi / float64(N)
-		alpha := math.Tan(theta)
+	for k := 0; k < (N/4)+1; k++ {
+		θ := float64(k) * math.Pi / float64(N)
+		α := math.Tan(θ)
 		for x := 0; x < D; x++ {
 
-			y := alpha * float64(x-xOff)
+			y := α * float64(x-xOff)
 			yd := int(math.Floor(y + roundingFactor(y)))
 
-			if (yd+yOff >= 0) && (yd+yOff < height) && (x < width) {
-				radonMap.Set(k, x, img.At(x, yd+yOff))
+			if (yd+yOff >= 0) && (yd+yOff < size.Y) && (x < size.X) {
+				addPixelsToGray(img, x, yd+yOff, *radonMap, k, x)
 				nbPerLine[k]++
 			}
-			if (yd+xOff >= 0) && (yd+xOff < width) && (k != N/4) && (x < height) {
-				radonMap.Set(N/2-k, x, img.At(yd+xOff, x))
+			if (yd+xOff >= 0) && (yd+xOff < size.X) && (k != N/4) && (x < size.Y) {
+				addPixelsToGray(img, yd+xOff, x, *radonMap, N/2-k, x)
 				nbPerLine[N/2-k]++
 			}
 
 		}
 	}
-	j := 0
-	for k := 3 * N / 4; k < N; k++ {
-		theta := float64(k) * math.Pi / float64(N)
-		alpha := math.Tan(theta)
+	for j, k := 0, 3*N/4; k < N; k++ {
+		θ := float64(k) * math.Pi / float64(N)
+		α := math.Tan(θ)
 		for x := 0; x < D; x++ {
-			y := alpha * float64(x-xOff)
+			y := α * float64(x-xOff)
 			yd := int(math.Floor(y + roundingFactor(y)))
-			if (yd+yOff >= 0) && (yd+yOff < height) && (x < width) {
-				radonMap.Set(k, x, img.At(x, yd+yOff))
+			if (yd+yOff >= 0) && (yd+yOff < size.Y) && (x < size.X) {
+				addPixelsToGray(img, x, yd+yOff, *radonMap, k, x)
 				nbPerLine[k]++
 			}
-			if (yOff-yd >= 0) && (yOff-yd < width) && (2*yOff-x >= 0) && (2*yOff-x < height) && (k != 3*N/4) {
-				radonMap.Set(k-j, x, img.At(-yd+yOff, -(x-yOff)+yOff))
+			if (yOff-yd >= 0) && (yOff-yd < size.X) && (2*yOff-x >= 0) && (2*yOff-x < size.Y) && (k != 3*N/4) {
+				addPixelsToGray(img, -yd+yOff, -(x-yOff)+yOff, *radonMap, k-j, x)
 				nbPerLine[k-j]++
 			}
 
@@ -99,7 +103,7 @@ func Project(img matrix.Matrix, N int) (Projections, error) {
 		j += 2
 	}
 
-	return projs, nil
+	return radonMap, nbPerLine, nil
 }
 
 //ProjectGray returns a greyscale sinogram (or radon projection) of img
@@ -187,7 +191,7 @@ func FeatureVector(projs Projections) FeaturesVector {
 	projectionMap := projs.R
 	nbPerline := projs.nbPixPerline
 	N := len(projs.nbPixPerline)
-	_, D := projectionMap.Dims()
+	D := projectionMap.Bounds().Size().X
 
 	fv.features = make([]float64, N)
 
@@ -195,14 +199,13 @@ func FeatureVector(projs Projections) FeaturesVector {
 	Σ := 0.0
 	sumSqd := 0.0
 	for k := 0; k < N; k++ {
-		lineSum := 0.0
-		lineSumSqd := 0.0
+		var lineSum, lineSumSqd uint8
 		nbPixels := nbPerline[k]
 		for i := 0; i < D; i++ {
-			lineSum += projectionMap.At(k, i)
-			lineSumSqd += projectionMap.At(k, i) * projectionMap.At(k, i)
+			lineSum += projectionMap.At(k, i).(color.Gray).Y
+			lineSumSqd += projectionMap.At(k, i).(color.Gray).Y * projectionMap.At(k, i).(color.Gray).Y
 		}
-		featV[k] = (lineSumSqd / float64(nbPixels)) - (lineSum*lineSum)/float64(nbPixels*nbPixels)
+		featV[k] = float64(lineSumSqd)/float64(nbPixels) - float64(lineSum*lineSum)/float64(nbPixels*nbPixels)
 		Σ += featV[k]
 		sumSqd += featV[k] * featV[k]
 	}
@@ -271,7 +274,10 @@ func AutoCorrelateProjections(projections image.Gray) []float64 {
 
 	// for each projection
 	for θ := 0; θ < nbProj; θ++ {
-		projection := projections.Pix[projections.PixOffset(0, θ):projections.PixOffset(width, θ)]
+		// log.Println("θ:", θ)
+		left := projections.PixOffset(0, θ)
+		right := projections.PixOffset(width, θ)
+		projection := projections.Pix[left:right]
 		out = append(out, AutoCorrelateSeries(projection)...)
 	}
 
@@ -411,8 +417,10 @@ func DiffByCrossCorr(xCoeffs, yCoeffs []uint8, threshold float64) (bool, float64
 }
 
 //DigestMatrix computes radon digest of img matrix
-func DigestMatrix(img *matrix.Dense) (Digest, Projections, FeaturesVector) {
-	radonProjection, err := Project(img, 0)
+func DigestMatrix(img image.Image) (Digest, Projections, FeaturesVector) {
+	var radonProjection Projections
+	var err error
+	radonProjection.R, radonProjection.nbPixPerline, err = Project(img, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -420,12 +428,6 @@ func DigestMatrix(img *matrix.Dense) (Digest, Projections, FeaturesVector) {
 	fv := FeatureVector(radonProjection)
 	dctDigest := Dct(fv)
 	return dctDigest, radonProjection, fv
-}
-
-//ToImage transforms back a set of projections
-//in an image
-func (p *Projections) ToImage() image.Image {
-	return manipulator.MatrixToImage(p.R)
 }
 
 //LogMap computes log mapping of signal

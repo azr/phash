@@ -2,7 +2,6 @@ package radon
 
 import (
 	"fmt"
-	"github.com/azr/phash/manipulator"
 	"image"
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
@@ -26,12 +25,8 @@ type ImageDigest struct {
 
 //ComputeRadonDigest puts the result of Radon in a digest
 func (d *ImageDigest) ComputeRadonDigest() error {
-	imgMtx, err := manipulator.ImageToMatrix(d.Image)
-	if err != nil {
-		panic(err)
-	}
 
-	d.Digest, d.Projections, d.FeaturesVector = DigestMatrix(imgMtx)
+	d.Digest, d.Projections, d.FeaturesVector = DigestMatrix(d.Image)
 
 	return nil
 }
