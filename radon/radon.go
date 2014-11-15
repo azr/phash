@@ -116,7 +116,7 @@ func Project(img image.Image, N int) (*image.Gray, []uint8, error) {
 // |  |  |    |
 func ProjectGray(src image.Image, N int) (*image.Gray, error) {
 	if N == 0 {
-		N = 180
+		N = 360
 	}
 	step := 180.0 / float64(N)
 
