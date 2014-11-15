@@ -41,7 +41,7 @@ func addPixelsToGray(src image.Image, sx, sy int, dst image.Gray, dx, dy int) {
 // center for lines angled 0 to 180 degrees from horizontal.
 // Totally not working
 //
-//  /param img - img [Matrix](code.google.com/p/biogo.matrix) src image
+//  /param img - img.Image src image
 //  /param  N  - int number of angled lines to consider.
 //  /return sinogram - Projections
 //  /return nbPerLine - number of pixel per line in sinogram
@@ -108,9 +108,9 @@ func Project(img image.Image, N int) (*image.Gray, []uint8, error) {
 }
 
 //ProjectGray returns a greyscale sinogram (or radon projection) of img
-// N(default: 180): number of image rotation on which a projection will be done
-// The naive simplistic approach
-// Sinograms looks like this
+// N(default: 360): number of image rotation on which a projection will be done
+// A naive simplistic approach
+// Sinograms looks like this :
 // θ1 θ2 θ3...θN
 // |  |  |    |
 // |  |  |    |
