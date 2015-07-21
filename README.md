@@ -1,3 +1,7 @@
+> **DEPRECATION WARNING**
+> This package is unmaintained and probably not what you're looking for.
+> Maybe when there is time, I will make if worth.
+
 phash
 =====
 
