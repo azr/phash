@@ -1,16 +1,8 @@
-> **DEPRECATION WARNING**
-> This package is kinda unmaintained and probably not what you're looking for.
-> Maybe when there is time, I will make it worth though !
-
 phash
 =====
 
-A simple perceptual hash library for golang. Still in dev !
+A simple perceptual hashing library for golang.
+Currently only works for images.
 
 [![Build Status](https://travis-ci.org/azr/phash.svg?branch=master)](https://travis-ci.org/azr/phash)
 [![Coverage Status](https://img.shields.io/coveralls/azr/phash.svg)](https://coveralls.io/r/azr/phash)
-
-Also uses [go-phash](https://github.com/kavu/go-phash) to compare results in tests
-----------------------------------------------
-
-**go-phash** [![Build Status](https://travis-ci.org/kavu/go-phash.png?branch=master)](https://travis-ci.org/kavu/go-phash) is a simple [pHash](http://phash.org) wrapper library for the Go programming language.
