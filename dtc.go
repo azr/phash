@@ -11,19 +11,26 @@ import (
 )
 
 var (
-	DTCSizeBig = 32
-	DTCSize    = 8
+	dtcSizeBig = 32
+	dtcSize    = 8
 )
 
 // DTC computes perceptual hash for image
 // using phash dtc image technique
+// Steps are the folowing
+//	 1. Reduce size to 32x32
+//	 2. Reduce color to greyscale
+//	 3. Compute the DCT.
+//	 4. Reduce the DCT to 8x8 in order to keep high frequencies.
+//	 5. Compute the median value of 8x8 dtc.
+//	 6. Further reduce the DCT into an uint64.
 func DTC(img image.Image) (phash uint64) {
 	if img == nil {
 		return
 	}
 
-	size := DTCSizeBig
-	smallerSize := DTCSize
+	size := dtcSizeBig
+	smallerSize := dtcSize
 
 	/* 1. Reduce size.
 	 * Like Average Hash, pHash starts with a small image.
@@ -41,10 +48,7 @@ func DTC(img image.Image) (phash uint64) {
 	vals := make([]float64, size*size)
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
-			r, g, b, _ := im.At(i, j).RGBA()
-			vals[size*i+j] = 0.299*float64(r) +
-				0.587*float64(g) +
-				0.114*float64(b)
+			vals[size*i+j] = ColorToGreyScaleFloat64(im.At(i, j))
 		}
 	}
 
@@ -105,7 +109,7 @@ func DTC(img image.Image) (phash uint64) {
 		}
 	}
 
-	/* 5. Compute the average value.
+	/* 5. Compute the median value.
 	 * Like the Average Hash, compute the mean DCT value (using only
 	 * the 8x8 DCT low-frequency values and excluding the first term
 	 * since the DC coefficient can be significantly different from
