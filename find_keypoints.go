@@ -34,7 +34,7 @@ func FindKeypoints(src image.Image, treshold float64) Points {
 			if ColorToGreyScaleFloat64(edgySrc.At(x, y)) > treshold {
 				// image is greyscale &
 				// there is an alpha so this point is interesting :)
-				points = append(points, image.Point{X: y, Y: y})
+				points = append(points, image.Point{X: x, Y: y})
 			}
 		}
 	}
