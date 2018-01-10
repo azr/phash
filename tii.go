@@ -42,6 +42,7 @@ func GetImageHashesForTriangle(src image.Image, triangle Triangle) []uint64 {
 		fragment := triangle.GetImageFragment(src)
 		fragment = imaging.Resize(fragment, outputTriangleSizeX, outputTriangleSizeY, imaging.Lanczos)
 		fragment = imaging.Rotate(fragment, float64(90*i), color.Black)
+		// cmd.WriteImageToPath(fragment, "/Users/azr/go/src/github.com/azr/phash/testdata/fragment.of.cat")
 		hashes[i] = DTC(fragment)
 	}
 	return hashes

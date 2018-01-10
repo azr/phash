@@ -25,7 +25,7 @@ func (t *Triangle) Area() int {
 	y1 := t.B().Y
 	y2 := t.C().Y
 
-	return int(x0*(y1-y2)+x1*(y2-y0)+x2*(y0-y1)) / 2
+	return (x0*(y1-y2) + x1*(y2-y0) + x2*(y0-y1)) / 2
 }
 
 // EveryTrianglesOpts is an option for EveryTriangles func
@@ -33,34 +33,36 @@ type EveryTrianglesOpts struct {
 	Ctx context.Context
 	// min distance between two points in pixels
 	// 150 / 500 respecively are good values
-	LowerThreshold, UpperThreshold             float64
+	LowerThreshold, UpperThreshold             int
 	lowerSquareThreshold, upperSquareThreshold int
 	MinArea                                    int // in pixels, 50 is a good value
 }
 
 func (opts *EveryTrianglesOpts) init() {
-	opts.lowerSquareThreshold, opts.upperSquareThreshold = int(math.Pow(opts.LowerThreshold, 2)), int(math.Pow(opts.UpperThreshold, 2))
+	opts.lowerSquareThreshold, opts.upperSquareThreshold = opts.LowerThreshold*opts.LowerThreshold, opts.UpperThreshold*opts.UpperThreshold
 }
 
 // DistanceInvalid returns true when distance is invalid
 //go:nosplit
 func (opts *EveryTrianglesOpts) DistanceInvalid(one, two image.Point) bool {
-	distance := squareDistance(one, two)
-	return distance < opts.lowerSquareThreshold || distance > opts.upperSquareThreshold
+	if true { // so we don't have to sqrt+type change
+		distance := squareDistance(one, two)
+		return distance < opts.lowerSquareThreshold || distance > opts.upperSquareThreshold
+	}
+	// legacy code to be sure
+	distance := int(math.Sqrt(float64(squareDistance(one, two))))
+	return distance < opts.LowerThreshold || distance > opts.UpperThreshold
 }
 
 // EveryTriangles returns every possible triangle from the points.
 // TODO(azr): parallelize.
 func (points Points) EveryTriangles(opts EveryTrianglesOpts) []Triangle {
-	if opts.LowerThreshold == 0 {
-		opts.LowerThreshold = 150
-	}
-	if opts.UpperThreshold == 0 {
-		opts.UpperThreshold = 500
-	}
-	if opts.MinArea == 0 {
-		opts.MinArea = 50
-	}
+	// if opts.UpperThreshold == 0 {
+	// 	opts.UpperThreshold = 500
+	// }
+	// if opts.MinArea == 0 {
+	// 	opts.MinArea = 50
+	// }
 	if opts.LowerThreshold == opts.UpperThreshold {
 		log.Println("EveryTriangles: Identical tresholds, this is not going to work.")
 		return nil
@@ -101,7 +103,8 @@ func (points Points) trianglesToFirst(opts EveryTrianglesOpts) []Triangle {
 				continue
 			}
 			t := Triangle{X, Y, Z}
-			if t.Area() < opts.MinArea {
+			area := t.Area()
+			if area < opts.MinArea {
 				continue
 			}
 			res = append(res, t)

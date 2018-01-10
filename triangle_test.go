@@ -23,11 +23,13 @@ func TestPoints_EveryTriangles(t *testing.T) {
 				image.Point{3, 1}, image.Point{4, 2}, image.Point{5, 3}, image.Point{6, 4}, image.Point{7, 5},
 			}, args: args{opts: EveryTrianglesOpts{MinArea: 6, UpperThreshold: 999999}},
 			want: []Triangle{
+				Triangle{image.Point{1, 2}, image.Point{3, 1}, image.Point{5, 6}},
+				Triangle{image.Point{1, 2}, image.Point{4, 2}, image.Point{5, 6}},
 				Triangle{image.Point{1, 2}, image.Point{3, 1}, image.Point{7, 5}},
+
 				Triangle{image.Point{2, 3}, image.Point{3, 1}, image.Point{7, 5}},
+
 				Triangle{image.Point{3, 4}, image.Point{3, 1}, image.Point{7, 5}},
-				Triangle{image.Point{4, 5}, image.Point{3, 1}, image.Point{7, 5}},
-				Triangle{image.Point{5, 6}, image.Point{3, 1}, image.Point{7, 5}},
 			},
 		},
 
@@ -76,14 +78,14 @@ func TestPoints_EveryTriangles(t *testing.T) {
 				Triangle{image.Point{1, 2}, image.Point{2, 3}, image.Point{3, 4}},
 			},
 		},
-		{name: "nil", points: Points{}, args: args{opts: EveryTrianglesOpts{}},
+		{name: "nil", points: Points{}, args: args{opts: EveryTrianglesOpts{UpperThreshold: 100}},
 			want: []Triangle{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.points.EveryTriangles(tt.args.opts); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Points.TrianglesToFirst() = %v, want %v", got, tt.want)
+				t.Errorf("Points.TrianglesToFirst():\n%v\nwanted:\n%v", got, tt.want)
 			}
 		})
 	}

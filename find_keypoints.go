@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/anthonynsimon/bild/effect"
-	"github.com/azr/phash/cmd"
 )
 
 // Points is a slice of points.
