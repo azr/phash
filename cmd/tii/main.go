@@ -29,7 +29,7 @@ func main() {
 		// 	img = imaging.Resize(img, 400, 0, imaging.Lanczos)
 		// }
 	}
-	keypoints := phash.FindKeypoints(img, 1)
+	keypoints := phash.FindKeypoints(img)
 
 	triangles := keypoints.EveryTriangles(phash.EveryTrianglesOpts{
 		LowerThreshold: 50,
