@@ -6,6 +6,8 @@ import (
 	"log"
 	"math"
 	"sort"
+
+	"github.com/azr/phash/cmd"
 )
 
 // A Triangle is made of three 2D points.
@@ -31,15 +33,23 @@ func (t *Triangle) Area() int {
 // EveryTrianglesOpts is an option for EveryTriangles func
 type EveryTrianglesOpts struct {
 	Ctx context.Context
-	// min distance between two points in pixels
-	// 150 / 500 respecively are good values
-	LowerThreshold, UpperThreshold             int
+	// number of pixels in image
+	Pixels int
+	// min distance ratio between two points
+	// 1 for LowerThreshold would mean a triangle has to
+	// contain as much pixel as the image has to be valid
+	LowerThresholdRatio, UpperThresholdRatio   float32
+	lowerThreshold, upperThreshold             int
 	lowerSquareThreshold, upperSquareThreshold int
-	MinArea                                    int // in pixels, 50 is a good value
+	MinAreaRatio                               float32 // ratio in pixels an triangle has to be for it to be valid
+	minArea                                    int     // in pixel ratio, 1 means everything
 }
 
 func (opts *EveryTrianglesOpts) init() {
-	opts.lowerSquareThreshold, opts.upperSquareThreshold = opts.LowerThreshold*opts.LowerThreshold, opts.UpperThreshold*opts.UpperThreshold
+	opts.lowerThreshold = int(opts.LowerThresholdRatio * float32(opts.Pixels))
+	opts.upperThreshold = int(opts.UpperThresholdRatio * float32(opts.Pixels))
+	opts.minArea = int(opts.MinAreaRatio * float32(opts.Pixels))
+	opts.lowerSquareThreshold, opts.upperSquareThreshold = opts.lowerThreshold*opts.lowerThreshold, opts.upperThreshold*opts.upperThreshold
 }
 
 // DistanceInvalid returns true when distance is invalid
@@ -51,23 +61,16 @@ func (opts *EveryTrianglesOpts) DistanceInvalid(one, two image.Point) bool {
 	}
 	// legacy code to be sure
 	distance := int(math.Sqrt(float64(squareDistance(one, two))))
-	return distance < opts.LowerThreshold || distance > opts.UpperThreshold
+	return distance < opts.lowerThreshold || distance > opts.upperThreshold
 }
 
 // EveryTriangles returns every possible triangle from the points.
-// TODO(azr): parallelize.
 func (points Points) EveryTriangles(opts EveryTrianglesOpts) []Triangle {
-	// if opts.UpperThreshold == 0 {
-	// 	opts.UpperThreshold = 500
-	// }
-	// if opts.MinArea == 0 {
-	// 	opts.MinArea = 50
-	// }
-	if opts.LowerThreshold == opts.UpperThreshold {
+	opts.init()
+	if opts.lowerThreshold == opts.upperThreshold {
 		log.Println("EveryTriangles: Identical tresholds, this is not going to work.")
 		return nil
 	}
-	opts.init()
 	// sort points in order to have cpu
 	// do faster using branching
 	sort.Sort(points)
@@ -79,7 +82,6 @@ func (points Points) EveryTriangles(opts EveryTrianglesOpts) []Triangle {
 			res = append(res, tri...)
 		}
 	}
-	log.Printf("EveryTriangles found %d triangles", len(res))
 	return res
 }
 
@@ -104,10 +106,44 @@ func (points Points) trianglesToFirst(opts EveryTrianglesOpts) []Triangle {
 			}
 			t := Triangle{X, Y, Z}
 			area := t.Area()
-			if area < opts.MinArea {
+			if area < opts.minArea {
 				continue
 			}
 			res = append(res, t)
+		}
+	}
+	return res
+}
+
+// Debug outputs your image to a triangle.jpg image
+// containing only triangle coordinates.
+func (t *Triangle) Debug(img image.Image) {
+	bounds := t.Bounds()
+	subImg := img.(interface {
+		SubImage(r image.Rectangle) image.Image
+	}).SubImage(bounds)
+	cmd.WriteImageToPath(subImg, "square-triangle")
+	println("")
+}
+
+// Bounds returns a rectangle containing triangle
+func (t *Triangle) Bounds() (res image.Rectangle) {
+	res.Min.Y, res.Min.X = t[0].Y, t[0].X
+	res.Max.Y, res.Max.X = t[0].Y, t[0].X
+
+	for i := 1; i < 3; i++ {
+		point := t[i]
+		if point.X < res.Min.X {
+			res.Min.X = point.X
+		}
+		if point.X > res.Min.X {
+			res.Max.X = point.X
+		}
+		if point.Y < res.Min.Y {
+			res.Min.Y = point.Y
+		}
+		if point.Y > res.Min.Y {
+			res.Max.Y = point.Y
 		}
 	}
 	return res

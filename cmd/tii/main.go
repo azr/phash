@@ -21,21 +21,19 @@ func main() {
 	}
 	go http.ListenAndServe(":6060", nil)
 	img, _ := cmd.OpenImageFromPath(os.Args[1])
-	{
-		// if img.Bounds().Max.Y > 400 {
-		// 	img = imaging.Resize(img, 0, 400, imaging.Lanczos)
-		// }
-		// if img.Bounds().Max.X > 400 {
-		// 	img = imaging.Resize(img, 400, 0, imaging.Lanczos)
-		// }
-	}
 	keypoints := phash.FindKeypoints(img)
+	log.Printf("keypoints: %d", len(keypoints))
 
+	bounds := img.Bounds()
 	triangles := keypoints.EveryTriangles(phash.EveryTrianglesOpts{
-		LowerThreshold: 50,
-		UpperThreshold: 500,
-		MinArea:        50,
+		Pixels:              (bounds.Max.X - bounds.Min.X) * (bounds.Max.Y - bounds.Min.Y),
+		LowerThresholdRatio: 0.00003,
+		UpperThresholdRatio: 0.00008,
+		MinAreaRatio:        0.00009,
 	})
+	log.Printf("triangles: %d", len(triangles))
+
+	triangles[1].Debug(img)
 
 	hashes := phash.GetImageHashesForTriangles(img, triangles)
 	log.Println("hashes:", hashes)
