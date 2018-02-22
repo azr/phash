@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/azr/phash/cmd"
 	"github.com/azr/phash/cornerdetect"
 
 	"github.com/azr/gift"
@@ -46,6 +45,5 @@ func FindKeypoints(src image.Image) Points {
 		simplifiedImage.Set(point.X-1, point.Y+1, color.Gray{255})
 		simplifiedImage.Set(point.X, point.Y, color.Gray{255})
 	}
-	cmd.WriteImageToPath(simplifiedImage, "./points")
 	return points
 }
