@@ -9,10 +9,6 @@ import (
 	"github.com/azr/gift"
 )
 
-const (
-	kParam = 0.04
-)
-
 // Points is a slice of points.
 type Points []image.Point
 
