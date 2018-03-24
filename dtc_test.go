@@ -2,14 +2,15 @@ package phash
 
 import (
 	"image"
+	"reflect"
 	"testing"
 
 	"github.com/azr/phash/cmd"
 )
 
 var (
-	lHiresJPG, _ = cmd.OpenImageFromPath("/Users/azr/go/src/github.com/azr/phash/testdata/lena/l_hires.jpg")
-	lHiresBMP, _ = cmd.OpenImageFromPath("/Users/azr/go/src/github.com/azr/phash/testdata/lena/lena.bmp")
+	lHiresJPG, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/l_hires.jpg")
+	lHiresBMP, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/lena.bmp")
 )
 
 func TestDTC(t *testing.T) {
