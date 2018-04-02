@@ -16,6 +16,10 @@ import (
 )
 
 // A Triangle is made of three 2D points.
+// A triangle is also a 3x3 matrix:
+// | x1, x2, x3 |
+// | y1, y2, y3 |
+// |  1,  1,  1 |
 type Triangle [3]image.Point
 
 func (t *Triangle) A() image.Point { return t[0] }

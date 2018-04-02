@@ -33,7 +33,7 @@ func main() {
 	})
 	log.Printf("triangles: %d", len(triangles))
 
-	n := 4010
+	n := 12
 	// n = 2
 	// if n >= len(triangles) {
 	// 	n = len(triangles) / 2

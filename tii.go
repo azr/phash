@@ -2,8 +2,8 @@ package phash
 
 import (
 	"image"
-	"image/color"
 
+	"github.com/azr/phash/cmd"
 	"github.com/disintegration/imaging"
 )
 
@@ -25,6 +25,7 @@ func GetImageHashesForTriangles(src image.Image, triangles []Triangle) []uint64 
 	for _, triangle := range triangles {
 		hashes := GetImageHashesForTriangle(src, triangle)
 		res = append(res, hashes...)
+		break
 	}
 	return res
 }
@@ -35,15 +36,12 @@ func GetImageHashesForTriangles(src image.Image, triangles []Triangle) []uint64 
 // 3. computes a dtc for 3 rotation of that
 func GetImageHashesForTriangle(src image.Image, triangle Triangle) []uint64 {
 	hashes := make([]uint64, NRotations)
-	outputTriangleSizeX := FragmentWidth
-	outputTriangleSizeY := FragmentHeight
 
+	fragment := triangle.ExtractEquilateralTriangleFrom(src)
 	for i := 0; i < NRotations; i++ {
-		fragment := triangle.GetImageFragment(src)
-		fragment = imaging.Resize(fragment, outputTriangleSizeX, outputTriangleSizeY, imaging.Lanczos)
-		fragment = imaging.Rotate(fragment, float64(90*i), color.Black)
-		// cmd.WriteImageToPath(fragment, "/Users/azr/go/src/github.com/azr/phash/testdata/fragment.of.cat")
+		cmd.WriteImageToPath(fragment, "fragment.of.cat")
 		hashes[i] = DTC(fragment)
+		break
 	}
 	return hashes
 }
