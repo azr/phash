@@ -33,12 +33,12 @@ func main() {
 	})
 	log.Printf("triangles: %d", len(triangles))
 
-	n := 12
+	// n := 12
 	// n = 2
 	// if n >= len(triangles) {
 	// 	n = len(triangles) / 2
 	// }
-	triangles[n].Debug(img)
+	triangles[0].Debug(img)
 
 	hashes := phash.GetImageHashesForTriangles(img, triangles)
 	log.Println("hashes:", hashes)

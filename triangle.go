@@ -154,7 +154,7 @@ func (t *Triangle) Debug(img image.Image) {
 				continue
 			}
 			triangle.Set(x-(tbounds.Min.X), y-(tbounds.Min.Y), simplifiedImage.At(x, y))
-			simplifiedImage.Set(x, y, color.Black)
+			// simplifiedImage.Set(x, y, color.Black)
 		}
 	}
 	cmd.WriteImageToPath(simplifiedImage, "full-triangle")
