@@ -16,7 +16,7 @@ func parallel(dataSize int, fn func(partStart, partEnd int)) {
 
 	numProcs := runtime.GOMAXPROCS(0)
 	if numProcs > 1 {
-		numGoroutines = numProcs
+		numGoroutines = numProcs - 1
 		partSize = dataSize / (numGoroutines)
 		if partSize < 1 {
 			partSize = 1
