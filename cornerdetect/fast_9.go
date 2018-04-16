@@ -10,9 +10,9 @@ import (
 //
 // The higher the threshold the mor picky it gets.
 // Points are sorted by score higher scores at the top.
-func Fast9(src *image.Gray, treshold int) []image.Point {
+func Fast9(src *image.Gray, threshold int) []image.Point {
 	bounds := src.Bounds()
-	return fast9_detect_nonmax(src.Pix, bounds.Max.X, bounds.Max.Y, src.Stride, treshold)
+	return fast9_detect_nonmax(src.Pix, bounds.Max.X, bounds.Max.Y, src.Stride, threshold)
 }
 
 type cornerScoreSorter struct {
