@@ -2,6 +2,7 @@ package phash
 
 import (
 	"image"
+	"image/color"
 	"math"
 )
 
@@ -78,27 +79,35 @@ func (a *Matrix) TransformPoint(x, y int) (int, int) {
 }
 
 func (a Triangle) ExtractEquilateralTriangleFrom(src image.Image) image.Image {
-	res := image.NewRGBA(image.Rect(0, 0, eTriangleSize, eTriangleSize))
-
 	invA := a.InverseMatrix()
 	b := eTriangleMatrix
 	invA.fixDet()
 	m := b.Mul(&invA)
 	m.fixDet()
 
-	for x := 0; x < eTriangleSize; x++ {
-		for y := 0; y < eTriangleHeight; y++ {
-			if !eTriangle.Contains(x, y) {
-				continue
-			}
-			// for each point of eTriangle
-			// find correspondig pixel in triangle a &
-			xa, ya := m.TransformPoint(x, y)
-			// set it in triangle b
-			res.Set(x, y, src.At(xa, ya))
-		}
+	return equilateralTriangleExtract{
+		src:          src,
+		fromTriangle: a,
+		m:            &m,
 	}
-	return res
+}
+
+type equilateralTriangleExtract struct {
+	src          image.Image
+	fromTriangle Triangle
+	m            *Matrix
+}
+
+func (_ equilateralTriangleExtract) Bounds() image.Rectangle {
+	return image.Rect(0, 0, eTriangleSize, eTriangleSize)
+}
+
+func (e equilateralTriangleExtract) ColorModel() color.Model { return e.src.ColorModel() }
+func (e equilateralTriangleExtract) At(x, y int) color.Color {
+	if !eTriangle.Contains(x, y) {
+		return color.Black
+	}
+	return e.src.At(e.m.TransformPoint(x, y))
 }
 
 func (a Triangle) Determinant() int {
