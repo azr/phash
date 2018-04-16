@@ -16,8 +16,8 @@ var (
 )
 
 // DTC computes perceptual hash for image
-// using phash dtc image technique
-// Steps are the folowing
+// using phash dtc image technique.
+//
 //	 1. Reduce size to 32x32
 //	 2. Reduce color to greyscale
 //	 3. Compute the DCT.

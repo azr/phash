@@ -20,7 +20,7 @@ const (
 // If two perceptual hashes are equal it means that the features
 // in the triangle are perceptually similar.
 //
-// Triangles could come from FindKeypoints or of your own library.
+// Triangles could come from FindKeypoints or your own library.
 func FromTriangles(src image.Image, triangles []triangle.Triangle) <-chan uint64 {
 	c := make(chan uint64)
 
