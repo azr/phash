@@ -17,7 +17,7 @@ func (p Points) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 // corner of the image src
 // src needs to be a grayscale image
 func DetectCorners(src *image.Gray) []image.Point {
-	pts := cornerdetect.Fast9(src, 30)
+	pts := cornerdetect.Fast9(src, 30) // 30 is apparently the best option
 	pixels := len(src.Pix)
 	end := Min(pixels/400, len(pts)-1)
 	return pts[:end]
