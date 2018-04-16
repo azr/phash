@@ -1,7 +1,6 @@
 package triangle
 
 import (
-	"context"
 	"image"
 	"log"
 	"sort"
@@ -11,8 +10,6 @@ import (
 
 // PossibilititesOpts is an option for EveryTriangles func
 type PossibilititesOpts struct {
-	Ctx context.Context
-
 	Src image.Image // source image
 
 	// min distance ratio between two points
