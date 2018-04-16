@@ -1,4 +1,4 @@
-package phash
+package triangle
 
 import (
 	"image"

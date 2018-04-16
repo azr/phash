@@ -1,4 +1,4 @@
-package phash
+package triangle
 
 import (
 	"image"
@@ -68,11 +68,17 @@ func TestTriangle_InverseMatrix(t *testing.T) {
 	}{
 		{
 			name: "basic test", a: NewTriangle(1, 1, 2, 2, 1, 3),
-			want: Matrix{m: [9]float64{-1, 2, -1, -1, 0, 1, 4, -2, 0}, determinant: 2},
+			want: Matrix{m: [9]float64{
+				-1, -1, 4,
+				2, 0, -2,
+				-1, 1, 0}, determinant: 2},
 		},
 		{
 			name: "real test", a: NewTriangle(3, 2272, 5, 2108, 84, 2184),
-			want: Matrix{m: [9]float64{-76, -88, 164, 79, -81, 2, -166152, 184296, -5036}, determinant: 13108},
+			want: Matrix{m: [9]float64{
+				-76, 79, -166152,
+				-88, -81, 184296,
+				164, 2, -5036}, determinant: 13108},
 		},
 	}
 	for _, tt := range tests {

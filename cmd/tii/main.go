@@ -12,6 +12,7 @@ import (
 
 	"github.com/azr/phash"
 	"github.com/azr/phash/cmd"
+	"github.com/azr/phash/geometry/triangle"
 )
 
 func main() {
@@ -24,13 +25,12 @@ func main() {
 	keypoints := phash.FindKeypoints(img)
 	log.Printf("keypoints: %d", len(keypoints))
 
-	bounds := img.Bounds()
-	triangles := keypoints.EveryTriangles(phash.EveryTrianglesOpts{
-		Pixels:              (bounds.Max.X - bounds.Min.X) * (bounds.Max.Y - bounds.Min.Y),
+	triangles := triangle.AllPossibilities(triangle.PossibilititesOpts{
+		Src:                 img,
 		LowerThresholdRatio: 0.00003,
 		UpperThresholdRatio: 0.00008,
 		MinAreaRatio:        0.00009,
-	})
+	}, keypoints)
 	log.Printf("triangles: %d", len(triangles))
 
 	// n := 12
