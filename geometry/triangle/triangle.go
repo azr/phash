@@ -19,19 +19,15 @@ import (
 // |  1,  1,  1 |
 type Triangle [3]image.Point
 
-func (t *Triangle) A() image.Point { return t[0] }
-func (t *Triangle) B() image.Point { return t[1] }
-func (t *Triangle) C() image.Point { return t[2] }
-
 // Area of the triangle
 func (t *Triangle) Area() int {
-	x0 := t.A().X
-	x1 := t.B().X
-	x2 := t.C().X
+	x0 := t[0].X
+	x1 := t[1].X
+	x2 := t[2].X
 
-	y0 := t.A().Y
-	y1 := t.B().Y
-	y2 := t.C().Y
+	y0 := t[0].Y
+	y1 := t[1].Y
+	y2 := t[2].Y
 
 	return (x0*(y1-y2) + x1*(y2-y0) + x2*(y0-y1)) / 2
 }

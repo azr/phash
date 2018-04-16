@@ -114,14 +114,14 @@ func (e equilateralTriangleExtract) At(x, y int) color.Color {
 }
 
 func (a Triangle) Determinant() int {
-	return a.B().X*a.C().Y - a.C().X*a.B().Y - a.A().Y*a.B().X + a.A().Y*a.C().X + a.A().X*a.B().Y - a.A().X*a.C().Y
+	return a[1].X*a[2].Y - a[2].X*a[1].Y - a[0].Y*a[1].X + a[0].Y*a[2].X + a[0].X*a[1].Y - a[0].X*a[2].Y
 }
 
 func (a Triangle) InverseMatrix() Matrix {
 	cofactorMatrix := [9]float64{
-		float64(a.B().Y - a.C().Y), -float64(a.B().X - a.C().X), float64((a.B().X * a.C().Y) - (a.B().Y * a.C().X)),
-		-float64(a.A().Y - a.C().Y), float64(a.A().X - a.C().X), -float64((a.A().X * a.C().Y) - (a.A().Y * a.C().X)),
-		float64(a.A().Y - a.B().Y), -float64(a.A().X - a.B().X), float64((a.A().X * a.B().Y) - (a.A().Y * a.B().X)),
+		float64(a[1].Y - a[2].Y), -float64(a[1].X - a[2].X), float64((a[1].X * a[2].Y) - (a[1].Y * a[2].X)),
+		-float64(a[0].Y - a[2].Y), float64(a[0].X - a[2].X), -float64((a[0].X * a[2].Y) - (a[0].Y * a[2].X)),
+		float64(a[0].Y - a[1].Y), -float64(a[0].X - a[1].X), float64((a[0].X * a[1].Y) - (a[0].Y * a[1].X)),
 	}
 	xint := Matrix{
 		m: [9]float64{
