@@ -13,7 +13,15 @@ const (
 	rotations = 3
 )
 
-// FromTriangles calls GetImageHashesForTriangle for each triangle
+// FromTriangles calculates 3 perceptual hash of src per triangles.
+//
+// A triangle is transformed into it's equilateral version
+// then we run a DTC on the 3 different angles of the triangle.
+//
+// If two perceptual hashes are equal it means that the features
+// in the triangle are perceptually similar.
+//
+// Triangles could come from FindKeypoints or of your own library.
 func FromTriangles(src image.Image, triangles []triangle.Triangle) []uint64 {
 	res := make([]uint64, 0, len(triangles)*rotations)
 
