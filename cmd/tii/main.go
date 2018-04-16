@@ -33,13 +33,9 @@ func main() {
 	}, keypoints)
 	log.Printf("triangles: %d", len(triangles))
 
-	// n := 12
-	// n = 2
-	// if n >= len(triangles) {
-	// 	n = len(triangles) / 2
-	// }
-	triangles[0].Debug(img)
-
 	hashes := phash.FromTriangles(img, triangles)
-	log.Println("hashes:", hashes)
+	for hash := range hashes {
+		print(hash, " ")
+	}
+	println("")
 }
