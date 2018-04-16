@@ -40,6 +40,6 @@ func main() {
 	// }
 	triangles[0].Debug(img)
 
-	hashes := phash.GetImageHashesForTriangles(img, triangles)
+	hashes := phash.FromTriangles(img, triangles)
 	log.Println("hashes:", hashes)
 }
