@@ -17,7 +17,7 @@ func parallel(dataSize int, fn func(partStart, partEnd int)) {
 	numProcs := runtime.GOMAXPROCS(0)
 	if numProcs > 1 {
 		numGoroutines = numProcs
-		partSize = dataSize / (numGoroutines * 10)
+		partSize = dataSize / (numGoroutines)
 		if partSize < 1 {
 			partSize = 1
 		}
@@ -31,7 +31,7 @@ func parallel(dataSize int, fn func(partStart, partEnd int)) {
 		idx := uint64(0)
 
 		for p := 0; p < numGoroutines; p++ {
-			go func() {
+			go func(p int) {
 				defer wg.Done()
 				for {
 					partStart := int(atomic.AddUint64(&idx, uint64(partSize))) - partSize
@@ -44,7 +44,7 @@ func parallel(dataSize int, fn func(partStart, partEnd int)) {
 					}
 					fn(partStart, partEnd)
 				}
-			}()
+			}(p)
 		}
 
 		wg.Wait()
