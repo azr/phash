@@ -92,6 +92,9 @@ func (a Triangle) ExtractEquilateralTriangleFrom(src image.Image) image.Image {
 	}
 }
 
+// equilateralTriangleExtract will display am equilateral
+// triangle that references another triangle in an image
+// When you call At extrapolated pixels will be used.
 type equilateralTriangleExtract struct {
 	src          image.Image
 	fromTriangle Triangle
