@@ -54,6 +54,7 @@ func trianglesToFirst(points geometry.Points, opts PossibilititesOpts) []Triangl
 			if area < opts.MinArea {
 				continue
 			}
+			sort.Sort(&t)
 			res = append(res, t)
 		}
 	}
@@ -78,5 +79,5 @@ func AllPossibilities(opts PossibilititesOpts, points geometry.Points) []Triangl
 			res = append(res, tri...)
 		}
 	}
-	return res
+	return Unique(res)
 }
