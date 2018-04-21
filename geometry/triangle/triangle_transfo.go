@@ -44,6 +44,7 @@ type Matrix struct {
 	determinant float64
 }
 
+// Mul return a * b which are 3/3 matrixes
 func (a *Matrix) Mul(b *Matrix) Matrix {
 	a.fixDet()
 	b.fixDet()
@@ -66,6 +67,7 @@ func (a *Matrix) fixDet() {
 	}
 }
 
+// Mul1 returns a ( 3 by 3 ) * b ( 1 by 3)
 func (a *Matrix) Mul1(b [3]float64) (x, y, z float64) {
 	a.fixDet()
 	return a.m[0]*b[0] + a.m[1]*b[1] + a.m[2]*b[2],
@@ -73,11 +75,15 @@ func (a *Matrix) Mul1(b [3]float64) (x, y, z float64) {
 		a.m[6]*b[0] + a.m[7]*b[1] + a.m[8]*b[2]
 }
 
+// TransformPoint gives you where point will be after
+// trasforming it through a
 func (a *Matrix) TransformPoint(x, y int) (int, int) {
 	xp, yp, _ := a.Mul1([3]float64{float64(x), float64(y), 1})
 	return int(xp), int(yp)
 }
 
+// ExtractEquilateralTriangleFrom will give you an equilateral triangle
+// extract from src at coordinates of a.
 func (a Triangle) ExtractEquilateralTriangleFrom(src image.Image) image.Image {
 	invA := a.InverseMatrix()
 	b := eTriangleMatrix
@@ -101,7 +107,7 @@ type equilateralTriangleExtract struct {
 	m            *Matrix
 }
 
-func (_ equilateralTriangleExtract) Bounds() image.Rectangle {
+func (equilateralTriangleExtract) Bounds() image.Rectangle {
 	return image.Rect(0, 0, eTriangleSize, eTriangleSize)
 }
 
@@ -113,10 +119,12 @@ func (e equilateralTriangleExtract) At(x, y int) color.Color {
 	return e.src.At(e.m.TransformPoint(x, y))
 }
 
+// Determinant of triangle matrix
 func (a Triangle) Determinant() int {
 	return a[1].X*a[2].Y - a[2].X*a[1].Y - a[0].Y*a[1].X + a[0].Y*a[2].X + a[0].X*a[1].Y - a[0].X*a[2].Y
 }
 
+// InverseMatrix gives you the matrix inverse of a.
 func (a Triangle) InverseMatrix() Matrix {
 	cofactorMatrix := [9]float64{
 		float64(a[1].Y - a[2].Y), -float64(a[1].X - a[2].X), float64((a[1].X * a[2].Y) - (a[1].Y * a[2].X)),

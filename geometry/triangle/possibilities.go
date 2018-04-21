@@ -10,26 +10,16 @@ import (
 
 // PossibilititesOpts is an option for EveryTriangles func
 type PossibilititesOpts struct {
-	Src image.Image // source image
-
 	// min distance ratio between two points
-	// 1 for LowerThreshold would mean a triangle has to
-	// contain as much pixel as the image has to be valid
-	LowerThresholdRatio, UpperThresholdRatio   float32
-	lowerThreshold, upperThreshold             int
-	lowerSquareThreshold, upperSquareThreshold int
+	LowerThreshold, UpperThreshold             int
+	lowerSquareThreshold, upperSquareThreshold int // pow 2 of thresholds
 
-	MinAreaRatio float32 // ratio in pixels an triangle has to be for it to be valid
-	minArea      int     // in pixel ratio, 1 means everything
+	MinArea int // in pixel
 }
 
 func (opts *PossibilititesOpts) init() {
-	bounds := opts.Src.Bounds()
-	pixels := (bounds.Max.X - bounds.Min.X) * (bounds.Max.Y - bounds.Min.Y)
-	opts.lowerThreshold = int(opts.LowerThresholdRatio * float32(pixels))
-	opts.upperThreshold = int(opts.UpperThresholdRatio * float32(pixels))
-	opts.minArea = int(opts.MinAreaRatio * float32(pixels))
-	opts.lowerSquareThreshold, opts.upperSquareThreshold = opts.lowerThreshold*opts.lowerThreshold, opts.upperThreshold*opts.upperThreshold
+
+	opts.lowerSquareThreshold, opts.upperSquareThreshold = opts.LowerThreshold*opts.LowerThreshold, opts.UpperThreshold*opts.UpperThreshold
 }
 
 // DistanceInvalid returns true when distance is invalid
@@ -61,7 +51,7 @@ func trianglesToFirst(points geometry.Points, opts PossibilititesOpts) []Triangl
 			}
 			t := Triangle{X, Y, Z}
 			area := t.Area()
-			if area < opts.minArea {
+			if area < opts.MinArea {
 				continue
 			}
 			res = append(res, t)
@@ -73,7 +63,7 @@ func trianglesToFirst(points geometry.Points, opts PossibilititesOpts) []Triangl
 // AllPossibilities returns every possible triangle from the points.
 func AllPossibilities(opts PossibilititesOpts, points geometry.Points) []Triangle {
 	opts.init()
-	if opts.lowerThreshold == opts.upperThreshold {
+	if opts.LowerThreshold == opts.UpperThreshold {
 		log.Println("EveryTriangles: Identical tresholds, this is not going to work.")
 		return nil
 	}
