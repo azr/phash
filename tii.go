@@ -3,6 +3,7 @@ package phash
 import (
 	"image"
 
+	"github.com/azr/phash/geometry"
 	"github.com/azr/phash/geometry/triangle"
 )
 
@@ -31,9 +32,8 @@ func FromTriangles(src image.Image, triangles []triangle.Triangle) <-chan uint64
 			fragment := triangle.ExtractEquilateralTriangleFrom(src)
 			for i := 0; i < rotations; i++ {
 				c <- DTC(fragment)
-				// break
+				fragment = geometry.InPlaceRotation90(fragment)
 			}
-			// break
 		}
 		close(c)
 	}()
