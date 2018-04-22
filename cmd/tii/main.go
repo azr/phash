@@ -36,8 +36,7 @@ func main() {
 		MinArea:        50,
 	}, keypoints)
 
-	triangles = triangles[:2]
-	log.Printf("image has keypoints: %d which resulted in %d valid triangles", len(keypoints), len(triangles))
+	log.Printf("image has %d keypoints which resulted in %d valid triangles", len(keypoints), len(triangles))
 	Debug(os.Args[1], keypoints, triangles, img)
 
 	hashes := phash.FromTriangles(img, triangles)
