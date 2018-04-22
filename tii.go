@@ -26,15 +26,16 @@ func FromTriangles(src image.Image, triangles []triangle.Triangle) <-chan uint64
 	c := make(chan uint64)
 
 	go func() {
-		for i := 0; i < len(triangles); i++ {
-			triangle := triangles[i]
-
-			fragment := triangle.ExtractEquilateralTriangleFrom(src)
-			for i := 0; i < rotations; i++ {
-				c <- DTC(fragment)
-				fragment = geometry.InPlaceRotation90(fragment)
+		parallel(len(triangles), func(start, end int) {
+			for i := start; i < end; i++ {
+				triangle := triangles[i]
+				fragment := triangle.ExtractEquilateralTriangleFrom(src)
+				for i := 0; i < rotations; i++ {
+					c <- DTC(fragment)
+					fragment = geometry.InPlaceRotation90(fragment)
+				}
 			}
-		}
+		})
 		close(c)
 	}()
 	return c

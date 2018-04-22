@@ -36,14 +36,18 @@ func main() {
 		MinArea:        50,
 	}, keypoints)
 
-	log.Printf("image has %d keypoints which resulted in %d valid triangles", len(keypoints), len(triangles))
+	size := geometry.Min(500, len(triangles))
+	log.Printf("image has %d keypoints which resulted in %d valid triangles, keeping first %d", len(keypoints), len(triangles), size)
+	triangles = triangles[:size]
 	Debug(os.Args[1], keypoints, triangles, img)
 
 	hashes := phash.FromTriangles(img, triangles)
-	for hash := range hashes {
-		print(hash, " ")
+	i := 0
+	for range /*hash :=*/ hashes {
+		// print(hash, " ")
+		i++
 	}
-	println("")
+	log.Printf("got %d hashes\n", i)
 }
 
 // Debug outputs your image to a triangle.jpg image
