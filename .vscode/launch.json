@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "tii-phash",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "program": "${workspaceRoot}/cmd/tii/",
+            "env": {
+            },
+            // "args": ["${workspaceRoot}/testdata/lena/l_hires.jpg"], 
+            "args": ["${workspaceRoot}/testdata/cats/cat_medium.jpg"], 
+            "showLog": true
+        }
+    ]
+}
