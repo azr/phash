@@ -42,12 +42,9 @@ func main() {
 	Debug(os.Args[1], keypoints, triangles, img)
 
 	hashes := phash.FromTriangles(img, triangles)
-	i := 0
-	for range /*hash :=*/ hashes {
-		// print(hash, " ")
-		i++
+	for _, hash := range hashes {
+		print(hash, " ")
 	}
-	log.Printf("got %d hashes\n", i)
 }
 
 // Debug outputs your image to a triangle.jpg image
