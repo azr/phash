@@ -4,7 +4,6 @@ phash
 =====
 
 A simple perceptual hashing library in Go.
-Only works for images.
 
 Usage :
 
@@ -18,5 +17,10 @@ img, _, err := image.Decode(f)
 if err != nil {
     panic(err)
 }
-phash.DTC(img)
+hash1 := phash.DTC(img)
+hash2 := phash.DTC(img)
+
+if phash.Distance(hash1, hash2) == 0 {
+    fmt.Println("these images sure do look alike.")
+}
 ```
