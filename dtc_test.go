@@ -1,16 +1,17 @@
 package phash
 
 import (
+	_ "embed"
 	"image"
-	"reflect"
+	"strings"
 	"testing"
-
-	"github.com/azr/phash/cmd"
 )
 
+//go:embed testdata/lena/l_hires.jpg
+var lHiresJPGFile string
+
 var (
-	lHiresJPG, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/l_hires.jpg")
-	// lHiresBMP, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/lena.bmp")
+	lHiresJPG, _, _ = image.Decode(strings.NewReader(lHiresJPGFile))
 )
 
 func TestDTC(t *testing.T) {
