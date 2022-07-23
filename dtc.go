@@ -1,6 +1,6 @@
 package phash
 
-// copy pasta from https://ironchef-team21.googlecode.com/git-history/75856e07bb89645d0e56820d6e79f8219a06bfb7/ironchef_team21/src/ImagePHash.java
+// port from https://ironchef-team21.googlecode.com/git-history/75856e07bb89645d0e56820d6e79f8219a06bfb7/ironchef_team21/src/ImagePHash.java
 
 import (
 	"image"
@@ -32,18 +32,16 @@ func DTC(img image.Image) (phash uint64) {
 	size := dtcSizeBig
 	smallerSize := dtcSize
 
-	/* 1. Reduce size.
-	 * Like Average Hash, pHash starts with a small image.
-	 * However, the image is larger than 8x8; 32x32 is a good size.
-	 * This is really done to simplify the DCT computation and not
-	 * because it is needed to reduce the high frequencies.
-	 */
+	// 1. Reduce size.
+	// Like Average Hash, pHash starts with a small image. However,
+	// the image is larger than 8x8; 32x32 is a good size. This is
+	// really done to simplify the DCT computation and not because it
+	// is needed to reduce the high frequencies.
 	im := imaging.Resize(img, size, size, imaging.Lanczos)
 
-	/* 2. Reduce color.
-	 * The image is reduced to a grayscale just to further simplify
-	 * the number of computations.
-	 */
+	// 2. Reduce color.
+	// The image is reduced to a grayscale just to further simplify
+	// the number of computations.
 
 	vals := make([]float64, size*size)
 	for i := 0; i < size; i++ {
@@ -52,11 +50,10 @@ func DTC(img image.Image) (phash uint64) {
 		}
 	}
 
-	/* 3. Compute the DCT.
-	 * The DCT separates the image into a collection of frequencies
-	 * and scalars. While JPEG uses an 8x8 DCT, this algorithm uses
-	 * a 32x32 DCT.
-	 */
+	// 3. Compute the DCT.
+	// The DCT separates the image into a collection of frequencies
+	// and scalars. While JPEG uses an 8x8 DCT, this algorithm uses a
+	// 32x32 DCT.
 
 	applyDCT2 := func(N int, f []float64) []float64 {
 		// initialize coefficients
@@ -96,11 +93,9 @@ func DTC(img image.Image) (phash uint64) {
 
 	dctVals := applyDCT2(size, vals)
 
-	/* 4. Reduce the DCT.
-	 * This is the magic step. While the DCT is 32x32, just keep the
-	 * top-left 8x8. Those represent the lowest frequencies in the
-	 * picture.
-	 */
+	// 4. Reduce the DCT.
+	// While the DCT is 32x32, just keep the top-left 8x8. Those
+	// represent the lowest frequencies in the picture.
 
 	vals = make([]float64, 0, smallerSize*smallerSize)
 	for x := 1; x <= smallerSize; x++ {
@@ -109,28 +104,25 @@ func DTC(img image.Image) (phash uint64) {
 		}
 	}
 
-	/* 5. Compute the median value.
-	 * Like the Average Hash, compute the mean DCT value (using only
-	 * the 8x8 DCT low-frequency values and excluding the first term
-	 * since the DC coefficient can be significantly different from
-	 * the other values and will throw off the average).
-	 */
+	// 5. Compute the median value.
+	// Like the Average Hash, compute the mean DCT value (using only
+	// the 8x8 DCT low-frequency values and excluding the first term
+	// since the DC coefficient can be significantly different from
+	// the other values and will throw off the average).
 
 	sortedVals := make([]float64, smallerSize*smallerSize)
 	copy(sortedVals, vals)
 	sort.Float64s(sortedVals)
 	median := sortedVals[smallerSize*smallerSize/2]
 
-	/* 6. Further reduce the DCT.
-	 * This is the magic step. Set the 64 hash bits to 0 or 1
-	 * depending on whether each of the 64 DCT values is above or
-	 * below the average value. The result doesn't tell us the
-	 * actual low frequencies; it just tells us the very-rough
-	 * relative scale of the frequencies to the mean. The result
-	 * will not vary as long as the overall structure of the image
-	 * remains the same; this will survive gamma and color histogram
-	 * adjustments without a problem.
-	 */
+	// 6. Further reduce the DCT.
+	// Set the 64 hash bits to 0 or 1 depending on whether each of the
+	// 64 DCT values is above or below the average value. The result
+	// doesn't tell us the actual low frequencies; it just tells us
+	// the very-rough relative scale of the frequencies to the mean.
+	// The result will not vary as long as the overall structure of
+	// the image remains the same; this will survive gamma and color
+	// histogram adjustments without a problem.
 
 	for n, e := range vals {
 		if e > median { // when frequency is higher than median
