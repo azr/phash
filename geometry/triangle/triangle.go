@@ -37,8 +37,6 @@ func (t *Triangle) Contains(x, y int) bool {
 	return ((b1 == b2) && (b2 == b3))
 }
 
-const triangleScale = 160
-
 // Bounds returns a rectangle containing triangle
 func (t *Triangle) Bounds() (res image.Rectangle) {
 	res.Min.Y, res.Min.X = t[0].Y, t[0].X

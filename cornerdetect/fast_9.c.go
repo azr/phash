@@ -3994,7 +3994,7 @@ func fast9_score(i []uint8, stride int, corners []image.Point, b int) []int {
 // fast9_detect - transpiled function from  fast_9.c:2975
 func fast9_detect(im []uint8, xsize, ysize, stride, b int) []image.Point {
 	var rsize int = 512
-	var pixel []int = make([]int, 16, 16)
+	var pixel []int = make([]int, 16)
 	ret_corners := make([]image.Point, 0, rsize)
 	make_offsets(pixel, stride)
 	x, y := 0, 0

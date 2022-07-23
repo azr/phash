@@ -10,7 +10,7 @@ import (
 
 var (
 	lHiresJPG, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/l_hires.jpg")
-	lHiresBMP, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/lena.bmp")
+	// lHiresBMP, _ = cmd.OpenImageFromPath(gopath() + "/src/" + reflect.TypeOf(Empty{}).PkgPath() + "/" + "testdata/lena/lena.bmp")
 )
 
 func TestDTC(t *testing.T) {

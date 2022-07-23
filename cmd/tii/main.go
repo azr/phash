@@ -73,5 +73,4 @@ func Debug(path string, keypoints geometry.Points, ts []triangle.Triangle, img i
 	}
 
 	cmd.WriteImageToPath(simplifiedImage, path+"full-triangle")
-	return
 }

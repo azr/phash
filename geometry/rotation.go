@@ -37,7 +37,7 @@ func InPlaceRotation90(src image.Image) image.Image {
 	// THOUGHTS(azr)
 	// weird/hard, this works but
 	// I have a wrong feeling about it
-	maxY := max.X - max.X
+	maxY := 0 //max.X - max.X
 	minY := -min.X - max.X
 	maxX := max.Y
 	minX := min.Y
