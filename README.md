@@ -1,4 +1,5 @@
 phash
+![Coverage](https://img.shields.io/badge/Coverage-54.3%25-yellow)
 =====
 
 A simple perceptual hashing library for golang.
