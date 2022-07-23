@@ -1,8 +1,6 @@
 package phash
 
 import (
-	"go/build"
-	"os"
 	"strconv"
 )
 
@@ -12,11 +10,3 @@ func parseBinary(i string) uint64 {
 }
 
 type Empty struct{}
-
-func gopath() string {
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		gopath = build.Default.GOPATH
-	}
-	return gopath
-}
