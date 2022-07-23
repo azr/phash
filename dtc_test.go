@@ -23,6 +23,9 @@ func TestDTC(t *testing.T) {
 		args      args
 		wantPhash uint64
 	}{
+		// This test is quite handy, because I could find the expected
+		// result in the research papers. A picture a bit more SFW
+		// would have been better though.
 		{name: "lena jpg",
 			args:      args{img: lHiresJPG},
 			wantPhash: parseBinary("0100011111110101011000000111111011000110010001110001010100011000")},
