@@ -15,8 +15,8 @@ var (
 	dtcSize    = 8
 )
 
-// DTC computes perceptual hash for image
-// using phash dtc image technique.
+// DTC computes the perceptual hash for img using phash dtc image
+// technique.
 //
 //	 1. Reduce size to 32x32
 //	 2. Reduce color to greyscale
