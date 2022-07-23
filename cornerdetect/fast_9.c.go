@@ -3958,7 +3958,6 @@ func fast9_corner_score(im []uint8, offset int, pixel []int, bstart int) (c2goDe
 		}
 		b = (bmin + bmax) / 2
 	}
-	return
 }
 
 // make_offsets - transpiled function from  fast_9.c:2938
