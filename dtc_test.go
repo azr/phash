@@ -12,6 +12,7 @@ var lHiresJPGFile string
 
 var (
 	lHiresJPG, _, _ = image.Decode(strings.NewReader(lHiresJPGFile))
+	knownLHiresHash = "0100011111110101011000000111111011000110010001110001010100011000"
 )
 
 func TestDTC(t *testing.T) {
@@ -28,7 +29,7 @@ func TestDTC(t *testing.T) {
 		// would have been better though.
 		{name: "lena jpg",
 			args:      args{img: lHiresJPG},
-			wantPhash: parseBinary("0100011111110101011000000111111011000110010001110001010100011000")},
+			wantPhash: parseBinary(knownLHiresHash)},
 		{name: "zero",
 			args:      args{img: nil},
 			wantPhash: 0},
