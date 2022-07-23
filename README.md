@@ -4,5 +4,5 @@ phash
 A simple perceptual hashing library for golang.
 Only works for images.
 
-[![Build Status](https://travis-ci.org/azr/phash.svg?branch=master)](https://travis-ci.org/azr/phash)
+![ci.yml](https://github.com/azr/phash/actions/workflows/ci.yml/badge.svg)
 [![Coverage Status](https://img.shields.io/coveralls/azr/phash.svg)](https://coveralls.io/r/azr/phash)
